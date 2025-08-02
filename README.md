@@ -1,11 +1,10 @@
-# QLens - AI-Powered Data Conversation Platform
+# QLens - Agentic-AI For Complex Data Analysis
 
-QLens is an intelligent data analysis platform that allows users to have natural conversations with their data. Upload CSV/Excel files and ask questions to get instant visualizations and insights powered by AI.
+QLens is an intelligent data analysis AI-Agent that allows users to have natural conversations with their data. Upload CSV/Excel files and ask questions to get instant visualizations and insights powered by AI.
 
 
-##Visuals :
+## Visuals :
 <img width="1027" height="665" alt="Screenshot from 2025-08-02 11-14-27" src="https://github.com/user-attachments/assets/687c0201-e3c2-41ff-88bc-1bb875fea534" />
-
 <img width="1480" height="797" alt="Screenshot from 2025-08-02 12-37-04" src="https://github.com/user-attachments/assets/964b963e-de4e-4310-b452-d86c5e8e9ccf" />
 <img width="1789" height="876" alt="Screenshot from 2025-08-02 10-36-25" src="https://github.com/user-attachments/assets/e732fbb3-921d-4e90-a2c5-594d32cb1f8a" />
 <img width="1789" height="876" alt="Screenshot from 2025-08-02 10-38-51" src="https://github.com/user-attachments/assets/8aa1edbe-8f86-45a4-b0c7-7158a08efea9" />
@@ -146,7 +145,56 @@ QLens/
 ├── .gitignore
 └── README.md
 ```
+## Backend Structure In-Depth :
+```
+├── app
+│   ├── agents.py
+│   ├── config.py
+│   ├── db.py
+│   ├── __init__.py
+│   ├── main.py
+│   ├── models
+│   │   ├── database.py
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── database.cpython-312.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   └── schemas.cpython-312.pyc
+│   │   └── schemas.py
+│   ├── models.py
+│   ├── __pycache__
+│   │   ├── agents.cpython-312.pyc
+│   │   ├── config.cpython-312.pyc
+│   │   ├── db.cpython-312.pyc
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── main.cpython-312.pyc
+│   │   ├── main.cpython-39.pyc
+│   │   └── sandbox.cpython-312.pyc
+│   ├── routers
+│   │   ├── chat.py
+│   │   ├── database.py
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── chat.cpython-312.pyc
+│   │   │   ├── database.cpython-312.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── upload.cpython-312.pyc
+│   │   │   └── upload.cpython-39.pyc
+│   │   └── upload.py
+│   ├── sample.csv
+│   ├── sandbox.py
+│   ├── services
+│   │   ├── code_executor.py
+│   │   ├── data_parser.py
+│   │   ├── db_connector.py
+│   │   ├── __init__.py
+│   │   ├── langgraph_orchestrator.py
+│   │   ├── llm.py
+│   │   ├── llm_service.py
+│   │   ├── orchestrator.py
 
+
+```
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -188,20 +236,4 @@ If you encounter any issues or have questions:
 2. Create a new issue with detailed information
 3. Contact the development team
 
-## 🗺️ Roadmap
 
-- [ ] Enhanced chart customization options
-- [ ] Support for more file formats
-- [ ] Advanced analytics features
-- [ ] User authentication and authorization
-- [ ] Collaborative workspaces
-- [ ] API rate limiting and optimization
-- [ ] Mobile application
-
-## 🙏 Acknowledgments
-
-- FastAPI for the robust backend framework
-- React for the modern frontend framework
-- Cerebras for AI/LLM capabilities
-- LangGraph for workflow orchestration
-- Docker for containerization support 
