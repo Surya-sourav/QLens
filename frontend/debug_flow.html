@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QLens Flow Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .step { margin: 15px 0; padding: 15px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .step.success { border-left-color: #28a745; background: #d4edda; }
+        .step.error { border-left-color: #dc3545; background: #f8d7da; }
+        .step.warning { border-left-color: #ffc107; background: #fff3cd; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        input[type="file"] { margin: 10px 0; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        .status { padding: 5px 10px; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 QLens Flow Debug Tool</h1>
+        <p>This tool helps debug the complete flow from file upload to chat integration.</p>
+
+        <!-- Step 1: Check localStorage -->
+        <div class="section">
+            <h2>Step 1: Check localStorage</h2>
+            <div class="step" id="step1">
+                <h3>Current localStorage Status</h3>
+                <div id="localStorageStatus"></div>
+                <button onclick="checkLocalStorage()">Refresh localStorage Status</button>
+                <button onclick="setTestFileId()">Set Test File ID</button>
+                <button onclick="clearLocalStorage()">Clear localStorage</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Simulate File Upload -->
+        <div class="section">
+            <h2>Step 2: Simulate File Upload</h2>
+            <div class="step" id="step2">
+                <h3>Upload a CSV file</h3>
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
+                <button onclick="simulateUpload()" id="uploadBtn" disabled>Upload File</button>
+                <div id="uploadStatus"></div>
+            </div>
+        </div>
+
+        <!-- Step 3: Check Data Sources -->
+        <div class="section">
+            <h2>Step 3: Check Data Sources</h2>
+            <div class="step" id="step3">
+                <h3>Data Sources Status</h3>
+                <div id="dataSourcesStatus"></div>
+                <button onclick="checkDataSources()">Check Data Sources</button>
+                <button onclick="simulateChatMessage()">Simulate Chat Message</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Test Chat Integration -->
+        <div class="section">
+            <h2>Step 4: Test Chat Integration</h2>
+            <div class="step" id="step4">
+                <h3>Chat Message Test</h3>
+                <input type="text" id="chatMessage" placeholder="Enter a test message" value="Generate me a bar chart" style="width: 300px; padding: 8px; margin: 5px;">
+                <button onclick="testChatMessage()">Send Test Message</button>
+                <div id="chatStatus"></div>
+            </div>
+        </div>
+
+        <!-- Debug Log -->
+        <div class="section">
+            <h2>Debug Log</h2>
+            <div id="debugLog" style="max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+                <p>Debug log will appear here...</p>
+            </div>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        let currentFileId = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('debugLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const statusClass = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
+            logDiv.innerHTML += `<div class="status ${statusClass}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('debugLog').innerHTML = '<p>Debug log cleared...</p>';
+        }
+
+        function checkLocalStorage() {
+            const fileId = localStorage.getItem('latestFileId');
+            const statusDiv = document.getElementById('localStorageStatus');
+            const stepDiv = document.getElementById('step1');
+            
+            if (fileId) {
+                statusDiv.innerHTML = `<div class="status success">✅ latestFileId found: ${fileId}</div>`;
+                stepDiv.className = 'step success';
+                log(`localStorage check: latestFileId = ${fileId}`, 'success');
+                currentFileId = fileId;
+            } else {
+                statusDiv.innerHTML = `<div class="status error">❌ latestFileId not found in localStorage</div>`;
+                stepDiv.className = 'step error';
+                log('localStorage check: latestFileId not found', 'error');
+                currentFileId = null;
+            }
+        }
+
+        function setTestFileId() {
+            const testId = 'test-file-id-' + Date.now();
+            localStorage.setItem('latestFileId', testId);
+            log(`Set test file ID: ${testId}`, 'success');
+            checkLocalStorage();
+        }
+
+        function clearLocalStorage() {
+            localStorage.removeItem('latestFileId');
+            log('Cleared latestFileId from localStorage', 'warning');
+            checkLocalStorage();
+        }
+
+        function simulateUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('No file selected for upload', 'error');
+                return;
+            }
+
+            log(`Simulating upload of: ${file.name}`, 'info');
+            
+            // Simulate upload process
+            setTimeout(() => {
+                const uploadedFileId = 'uploaded-file-' + Date.now();
+                localStorage.setItem('latestFileId', uploadedFileId);
+                
+                const statusDiv = document.getElementById('uploadStatus');
+                statusDiv.innerHTML = `<div class="status success">✅ File uploaded successfully! File ID: ${uploadedFileId}</div>`;
+                
+                log(`Upload completed: ${uploadedFileId}`, 'success');
+                currentFileId = uploadedFileId;
+                
+                // Update step status
+                document.getElementById('step2').className = 'step success';
+                
+                // Auto-check data sources
+                setTimeout(checkDataSources, 500);
+            }, 1000);
+        }
+
+        function checkDataSources() {
+            const fileId = localStorage.getItem('latestFileId');
+            const statusDiv = document.getElementById('dataSourcesStatus');
+            const stepDiv = document.getElementById('step3');
+            
+            if (fileId) {
+                const dataSources = [fileId];
+                statusDiv.innerHTML = `
+                    <div class="status success">✅ Data sources ready</div>
+                    <pre>dataSources: ${JSON.stringify(dataSources, null, 2)}</pre>
+                `;
+                stepDiv.className = 'step success';
+                log(`Data sources check: ${JSON.stringify(dataSources)}`, 'success');
+            } else {
+                statusDiv.innerHTML = `<div class="status error">❌ No data sources available (no file ID in localStorage)</div>`;
+                stepDiv.className = 'step error';
+                log('Data sources check: No file ID found', 'error');
+            }
+        }
+
+        function simulateChatMessage() {
+            const fileId = localStorage.getItem('latestFileId');
+            if (!fileId) {
+                log('Cannot simulate chat message: No file ID in localStorage', 'error');
+                return;
+            }
+
+            const message = "Generate me a bar chart";
+            const dataSources = [fileId];
+            
+            log(`Simulating chat message: "${message}" with dataSources: ${JSON.stringify(dataSources)}`, 'info');
+            
+            // Simulate what the frontend should send to backend
+            const chatRequest = {
+                message: message,
+                dataSources: dataSources
+            };
+            
+            log(`Chat request payload: ${JSON.stringify(chatRequest, null, 2)}`, 'success');
+            
+            // Update step status
+            document.getElementById('step4').className = 'step success';
+        }
+
+        function testChatMessage() {
+            const messageInput = document.getElementById('chatMessage');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                log('Please enter a message to test', 'error');
+                return;
+            }
+
+            const fileId = localStorage.getItem('latestFileId');
+            const statusDiv = document.getElementById('chatStatus');
+            
+            if (fileId) {
+                const dataSources = [fileId];
+                const chatRequest = {
+                    message: message,
+                    dataSources: dataSources
+                };
+                
+                statusDiv.innerHTML = `
+                    <div class="status success">✅ Chat message ready to send</div>
+                    <pre>Request: ${JSON.stringify(chatRequest, null, 2)}</pre>
+                `;
+                
+                log(`Chat message test: "${message}" with dataSources: ${JSON.stringify(dataSources)}`, 'success');
+            } else {
+                statusDiv.innerHTML = `<div class="status error">❌ Cannot send message: No file ID in localStorage</div>`;
+                log('Chat message test: No file ID available', 'error');
+            }
+        }
+
+        // File input change handler
+        document.getElementById('fileInput').addEventListener('change', function() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = !this.files.length;
+            if (this.files.length) {
+                log(`File selected: ${this.files[0].name}`, 'info');
+            }
+        });
+
+        // Initialize
+        log('🔍 QLens Flow Debug Tool initialized', 'info');
+        checkLocalStorage();
+    </script>
+</body>
+</html> 

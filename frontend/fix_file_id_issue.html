@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix File ID Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .step { margin: 15px 0; padding: 15px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .status { padding: 5px 10px; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .code { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+        input[type="file"] { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix File ID Issue</h1>
+        <p>The problem is that your frontend has a stale file ID and the upload response isn't working correctly.</p>
+
+        <div class="step">
+            <h3>Step 1: Check Current Status</h3>
+            <div id="currentStatus"></div>
+            <button onclick="checkCurrent()">Check Current File ID</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Test Upload Endpoint</h3>
+            <button onclick="testUploadEndpoint()">Test Upload API</button>
+            <div id="uploadTestStatus"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Upload a Test File</h3>
+            <input type="file" id="testFile" accept=".csv,.xlsx,.xls" />
+            <button onclick="uploadTestFile()" id="uploadBtn" disabled>Upload Test File</button>
+            <div id="uploadStatus"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Get Latest File and Fix localStorage</h3>
+            <button onclick="getLatestFile()">🔄 Get Latest File</button>
+            <button onclick="fixLocalStorage()" id="fixBtn" disabled>🔧 Fix localStorage</button>
+            <div id="fixStatus"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 5: Test Chat</h3>
+            <button onclick="testChat()" id="testBtn" disabled>🧪 Test Chat</button>
+            <div id="testStatus"></div>
+        </div>
+
+        <div class="step">
+            <h3>Manual Fix (Alternative)</h3>
+            <p>If the buttons don't work, open your browser's Developer Tools (F12) and run this in the Console:</p>
+            <div class="code" id="manualCode">
+                // Click "Get Latest File" first to see the correct ID
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let correctFileId = null;
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const statusClass = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
+        }
+
+        function checkCurrent() {
+            const currentFileId = localStorage.getItem('latestFileId');
+            if (currentFileId) {
+                log('currentStatus', `Current file ID: ${currentFileId}`, 'info');
+            } else {
+                log('currentStatus', 'No file ID found in localStorage', 'error');
+            }
+        }
+
+        async function testUploadEndpoint() {
+            try {
+                log('uploadTestStatus', '🔄 Testing upload endpoint...', 'info');
+                
+                const response = await fetch('http://localhost:8000/api/v1/upload/files');
+                const files = await response.json();
+                
+                if (files && files.length > 0) {
+                    log('uploadTestStatus', `✅ Upload endpoint working! Found ${files.length} files`, 'success');
+                    console.log('Files:', files);
+                } else {
+                    log('uploadTestStatus', '⚠️ Upload endpoint working but no files found', 'info');
+                }
+            } catch (error) {
+                log('uploadTestStatus', `❌ Upload endpoint error: ${error.message}`, 'error');
+            }
+        }
+
+        async function uploadTestFile() {
+            const fileInput = document.getElementById('testFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('uploadStatus', 'No file selected', 'error');
+                return;
+            }
+
+            try {
+                log('uploadStatus', `🔄 Uploading ${file.name}...`, 'info');
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('http://localhost:8000/api/v1/upload/file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                console.log('Upload response:', result);
+                
+                if (result.success && result.fileId) {
+                    log('uploadStatus', `✅ Upload successful! File ID: ${result.fileId}`, 'success');
+                    correctFileId = result.fileId;
+                    document.getElementById('fixBtn').disabled = false;
+                } else {
+                    log('uploadStatus', `❌ Upload failed: ${result.message}`, 'error');
+                    console.error('Upload response:', result);
+                }
+            } catch (error) {
+                log('uploadStatus', `❌ Upload error: ${error.message}`, 'error');
+            }
+        }
+
+        async function getLatestFile() {
+            try {
+                log('fixStatus', '🔄 Fetching latest file from backend...', 'info');
+                
+                const response = await fetch('http://localhost:8000/api/v1/upload/files');
+                const files = await response.json();
+                
+                if (files && files.length > 0) {
+                    const latestFile = files[0]; // First file is the most recent
+                    correctFileId = latestFile.id;
+                    
+                    log('fixStatus', `✅ Latest file found: ${latestFile.original_filename} (ID: ${correctFileId})`, 'success');
+                    
+                    // Update manual code
+                    document.getElementById('manualCode').textContent = `localStorage.setItem('latestFileId', '${correctFileId}');`;
+                    
+                    // Enable fix button
+                    document.getElementById('fixBtn').disabled = false;
+                } else {
+                    log('fixStatus', '❌ No files found in backend. Please upload a file first.', 'error');
+                }
+            } catch (error) {
+                log('fixStatus', `❌ Error fetching files: ${error.message}`, 'error');
+            }
+        }
+
+        function fixLocalStorage() {
+            if (correctFileId) {
+                localStorage.setItem('latestFileId', correctFileId);
+                log('fixStatus', `✅ Updated localStorage with correct file ID: ${correctFileId}`, 'success');
+                
+                // Enable test button
+                document.getElementById('testBtn').disabled = false;
+            } else {
+                log('fixStatus', '❌ No file ID available. Please get the latest file first.', 'error');
+            }
+        }
+
+        async function testChat() {
+            if (!correctFileId) {
+                log('testStatus', '❌ No file ID available. Please get the latest file first.', 'error');
+                return;
+            }
+
+            try {
+                log('testStatus', '🔄 Testing chat with fixed file ID...', 'info');
+                
+                const response = await fetch('http://localhost:8000/api/v1/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: "Generate me a bar chart",
+                        dataSources: [correctFileId]
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Chat response:', result);
+                
+                if (result.content && result.content.includes("I don't see any data file uploaded")) {
+                    log('testStatus', '❌ Still getting "no data" error. The issue persists.', 'error');
+                } else {
+                    log('testStatus', `✅ SUCCESS! Chat response: ${result.content.substring(0, 100)}...`, 'success');
+                }
+            } catch (error) {
+                log('testStatus', `❌ Error testing chat: ${error.message}`, 'error');
+            }
+        }
+
+        // File input change handler
+        document.getElementById('testFile').addEventListener('change', function() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = !this.files.length;
+            if (this.files.length) {
+                console.log('File selected:', this.files[0].name);
+            }
+        });
+
+        // Initialize
+        checkCurrent();
+    </script>
+</body>
+</html> 

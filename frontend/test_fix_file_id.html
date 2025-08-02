@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix File ID</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .step { margin: 15px 0; padding: 15px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .status { padding: 5px 10px; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix File ID Issue</h1>
+        <p>This tool will help fix the file ID issue by updating localStorage with the correct file ID.</p>
+
+        <div class="step">
+            <h3>Step 1: Check Current localStorage</h3>
+            <div id="currentStatus"></div>
+            <button onclick="checkCurrentStatus()">Check Current Status</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Get Latest File ID from Backend</h3>
+            <div id="backendStatus"></div>
+            <button onclick="getLatestFileId()">Get Latest File ID</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Update localStorage</h3>
+            <div id="updateStatus"></div>
+            <button onclick="updateLocalStorage()" id="updateBtn" disabled>Update localStorage</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Test Chat</h3>
+            <div id="testStatus"></div>
+            <button onclick="testChat()" id="testBtn" disabled>Test Chat</button>
+        </div>
+
+        <div class="step">
+            <h3>Instructions</h3>
+            <ol>
+                <li>Click "Check Current Status" to see what's currently in localStorage</li>
+                <li>Click "Get Latest File ID" to fetch the most recent file from the backend</li>
+                <li>Click "Update localStorage" to store the correct file ID</li>
+                <li>Click "Test Chat" to verify the fix works</li>
+                <li>Go back to your main application and try the chat again!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let latestFileId = null;
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const statusClass = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
+        }
+
+        function checkCurrentStatus() {
+            const currentFileId = localStorage.getItem('latestFileId');
+            if (currentFileId) {
+                log('currentStatus', `✅ Current file ID in localStorage: ${currentFileId}`, 'success');
+            } else {
+                log('currentStatus', '❌ No file ID found in localStorage', 'error');
+            }
+        }
+
+        async function getLatestFileId() {
+            try {
+                log('backendStatus', '🔄 Fetching latest file from backend...', 'info');
+                
+                const response = await fetch('http://localhost:8000/api/v1/upload/files');
+                const files = await response.json();
+                
+                if (files && files.length > 0) {
+                    const latestFile = files[0]; // First file is the most recent
+                    latestFileId = latestFile.id;
+                    
+                    log('backendStatus', `✅ Latest file found: ${latestFile.original_filename} (ID: ${latestFileId})`, 'success');
+                    
+                    // Enable update button
+                    document.getElementById('updateBtn').disabled = false;
+                } else {
+                    log('backendStatus', '❌ No files found in backend', 'error');
+                }
+            } catch (error) {
+                log('backendStatus', `❌ Error fetching files: ${error.message}`, 'error');
+            }
+        }
+
+        function updateLocalStorage() {
+            if (latestFileId) {
+                localStorage.setItem('latestFileId', latestFileId);
+                log('updateStatus', `✅ Updated localStorage with file ID: ${latestFileId}`, 'success');
+                
+                // Enable test button
+                document.getElementById('testBtn').disabled = false;
+            } else {
+                log('updateStatus', '❌ No file ID available to update', 'error');
+            }
+        }
+
+        async function testChat() {
+            try {
+                log('testStatus', '🔄 Testing chat with updated file ID...', 'info');
+                
+                const response = await fetch('http://localhost:8000/api/v1/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: "Generate me a bar chart",
+                        dataSources: [latestFileId]
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.content && result.content.includes("I don't see any data file uploaded")) {
+                    log('testStatus', '❌ Still getting "no data" error. The issue persists.', 'error');
+                } else {
+                    log('testStatus', `✅ SUCCESS! Chat response: ${result.content.substring(0, 100)}...`, 'success');
+                }
+            } catch (error) {
+                log('testStatus', `❌ Error testing chat: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize
+        checkCurrentStatus();
+    </script>
+</body>
+</html> 

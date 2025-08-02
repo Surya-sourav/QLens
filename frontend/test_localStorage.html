@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>localStorage Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>localStorage Test for QLens</h1>
+        
+        <div class="test-section info">
+            <h3>Current localStorage Contents</h3>
+            <pre id="currentStorage">Loading...</pre>
+        </div>
+
+        <div class="test-section">
+            <h3>Test localStorage Operations</h3>
+            <button onclick="testSetItem()">Set latestFileId</button>
+            <button onclick="testGetItem()">Get latestFileId</button>
+            <button onclick="testRemoveItem()">Remove latestFileId</button>
+            <button onclick="clearAll()">Clear All localStorage</button>
+            <button onclick="refreshDisplay()">Refresh Display</button>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Manual localStorage Test</h3>
+            <input type="text" id="testKey" placeholder="Key" value="latestFileId">
+            <input type="text" id="testValue" placeholder="Value" value="test-file-id-123">
+            <button onclick="manualSet()">Set</button>
+            <button onclick="manualGet()">Get</button>
+        </div>
+    </div>
+
+    <script>
+        function refreshDisplay() {
+            const storage = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                storage[key] = localStorage.getItem(key);
+            }
+            document.getElementById('currentStorage').textContent = JSON.stringify(storage, null, 2);
+        }
+
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const div = document.createElement('div');
+            div.className = `test-section ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            resultsDiv.appendChild(div);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function testSetItem() {
+            try {
+                const testId = 'test-file-id-' + Date.now();
+                localStorage.setItem('latestFileId', testId);
+                addResult(`✅ Successfully set latestFileId to: ${testId}`, 'success');
+                refreshDisplay();
+            } catch (error) {
+                addResult(`❌ Error setting latestFileId: ${error.message}`, 'error');
+            }
+        }
+
+        function testGetItem() {
+            try {
+                const value = localStorage.getItem('latestFileId');
+                if (value) {
+                    addResult(`✅ Successfully retrieved latestFileId: ${value}`, 'success');
+                } else {
+                    addResult(`⚠️ latestFileId not found in localStorage`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Error getting latestFileId: ${error.message}`, 'error');
+            }
+        }
+
+        function testRemoveItem() {
+            try {
+                localStorage.removeItem('latestFileId');
+                addResult(`✅ Successfully removed latestFileId`, 'success');
+                refreshDisplay();
+            } catch (error) {
+                addResult(`❌ Error removing latestFileId: ${error.message}`, 'error');
+            }
+        }
+
+        function clearAll() {
+            try {
+                localStorage.clear();
+                addResult(`✅ Successfully cleared all localStorage`, 'success');
+                refreshDisplay();
+            } catch (error) {
+                addResult(`❌ Error clearing localStorage: ${error.message}`, 'error');
+            }
+        }
+
+        function manualSet() {
+            try {
+                const key = document.getElementById('testKey').value;
+                const value = document.getElementById('testValue').value;
+                localStorage.setItem(key, value);
+                addResult(`✅ Successfully set ${key} = ${value}`, 'success');
+                refreshDisplay();
+            } catch (error) {
+                addResult(`❌ Error setting item: ${error.message}`, 'error');
+            }
+        }
+
+        function manualGet() {
+            try {
+                const key = document.getElementById('testKey').value;
+                const value = localStorage.getItem(key);
+                if (value) {
+                    addResult(`✅ Retrieved ${key} = ${value}`, 'success');
+                } else {
+                    addResult(`⚠️ Key ${key} not found`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Error getting item: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize display
+        refreshDisplay();
+        addResult('🚀 localStorage test page loaded', 'info');
+    </script>
+</body>
+</html> 

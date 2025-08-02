@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: qlens_db
+      POSTGRES_USER: qlens_user
+      POSTGRES_PASSWORD: qlens_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - qlens-network
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    networks:
+      - qlens-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://neondb_owner:npg_Gl3iHDhC8oar@ep-gentle-shadow-a1l92x53-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+      - REDIS_URL=redis://redis:6379
+      - CEREBRAS_API_KEY=csk-j45pxjxj3y6wkmexnxmk5vd48ypdy4npd35t695hkvn6jrvf
+      - SECRET_KEY=your-secret-key-change-in-production
+      - DEBUG=True
+      - HOST=0.0.0.0
+      - PORT=8000
+      - UPLOAD_DIR=./uploads
+      - MAX_FILE_SIZE=10485760
+      - CORS_ORIGINS=["http://localhost:3000", "http://localhost:5173"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - redis
+    networks:
+      - qlens-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - VITE_API_URL=http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - qlens-network
+
+volumes:
+  postgres_data:
+
+networks:
+  qlens-network:
+    driver: bridge 
