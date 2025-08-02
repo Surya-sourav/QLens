@@ -2,6 +2,14 @@
 
 QLens is an intelligent data analysis platform that allows users to have natural conversations with their data. Upload CSV/Excel files and ask questions to get instant visualizations and insights powered by AI.
 
+
+##Visuals :
+<img width="1027" height="665" alt="Screenshot from 2025-08-02 11-14-27" src="https://github.com/user-attachments/assets/687c0201-e3c2-41ff-88bc-1bb875fea534" />
+
+<img width="1480" height="797" alt="Screenshot from 2025-08-02 12-37-04" src="https://github.com/user-attachments/assets/964b963e-de4e-4310-b452-d86c5e8e9ccf" />
+<img width="1789" height="876" alt="Screenshot from 2025-08-02 10-36-25" src="https://github.com/user-attachments/assets/e732fbb3-921d-4e90-a2c5-594d32cb1f8a" />
+<img width="1789" height="876" alt="Screenshot from 2025-08-02 10-38-51" src="https://github.com/user-attachments/assets/8aa1edbe-8f86-45a4-b0c7-7158a08efea9" />
+
 ## 🚀 Features
 
 - **Natural Language Queries**: Ask questions about your data in plain English
