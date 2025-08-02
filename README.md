@@ -20,6 +20,7 @@ QLens is an intelligent data analysis AI-Agent that allows users to have natural
 - **Docker Support**: Easy deployment with containerization
 
 ## 🏗️ Architecture
+<img width="869" height="666" alt="image" src="https://github.com/user-attachments/assets/b5aeb3ae-c7a2-4e0d-bda5-d856b18bba6f" />
 
 - **Frontend**: React.js with modern UI components
 - **Backend**: FastAPI with Python
