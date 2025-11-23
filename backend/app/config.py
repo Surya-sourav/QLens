@@ -1,4 +1,5 @@
 import os
+import json
 from typing import List
 from pydantic_settings import BaseSettings
 
@@ -27,12 +28,25 @@ class Settings(BaseSettings):
     sandbox_timeout: int = 30  # 30 seconds
     
     # Security
-    cors_origins: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173"
-    ]
+    @property
+    def cors_origins(self) -> List[str]:
+        cors_env = os.getenv("CORS_ORIGINS")
+        if cors_env:
+            try:
+                parsed = json.loads(cors_env)
+                if parsed == ["*"]:
+                    return ["*"]
+                return parsed
+            except json.JSONDecodeError:
+                pass
+        return [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://localhost:5173",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:3001",
+            "http://127.0.0.1:5173"
+        ]
     
     class Config:
         env_file = ".env"

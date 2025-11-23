@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 import json
 import uuid
 from datetime import datetime
-from app.models.schemas import ChatRequest, ChatResponse, MessageType, ChatMessage
+from app.models.schemas import ChatRequest, ChatResponse, MessageType, ChatMessage, ResponseType
 from app.services.langgraph_orchestrator import orchestrator
 from app.models.database import get_db, ChatSession, ChatMessage as ChatMessageModel, FileUpload as FileUploadORM
 from sqlalchemy.orm import Session
@@ -56,7 +56,7 @@ async def send_message(
         generic_greetings = ["hi", "hello", "hey", "how are you", "good morning", "good afternoon", "good evening"]
         if request.message.strip().lower() in generic_greetings:
             response_content = (
-                "Hello! I'm your data assistant. You can upload a CSV or Excel file and ask me questions about your data, request visualizations, or get insights. "
+                "Hello! I'm your data assistant. You can upload a CSV or Excel file and ask me questions about your data, request visualizations, perform calculations, or get insights. "
                 "How can I help you with your data today?"
             )
             assistant_message = ChatMessageModel(
@@ -74,9 +74,12 @@ async def send_message(
                 "content": response_content,
                 "message_type": MessageType.ASSISTANT,
                 "timestamp": assistant_message.timestamp,
+                "response_type": ResponseType.TEXT,
                 "chartData": None,
                 "chartType": None,
                 "chartCode": None,
+                "calculation_result": None,
+                "data_preview": None,
                 "metadata": None
             }
 
@@ -92,20 +95,28 @@ async def send_message(
         result = await orchestrator.process_query(request.message, data_context)
         logger.info(f"Orchestrator result: {result}")
         
+        # DEBUG: Log the exact structure of the result
+        logger.info(f"[DEBUG] Result keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
+        logger.info(f"[DEBUG] Query intent from result: {result.get('query_intent')}")
+        logger.info(f"[DEBUG] Query analysis from result: {result.get('query_analysis')}")
+        
         final_response = result.get("final_response", {})
         logger.info(f"Final response: {final_response}")
         
         # Extract response content
         if isinstance(final_response, dict):
             response_content = final_response.get("content", "") or final_response.get("message", "")
+            response_type = final_response.get("response_type", ResponseType.TEXT)
         else:
             response_content = str(final_response)
+            response_type = ResponseType.TEXT
         
         # Ensure we have a response
         if not response_content:
             response_content = "I understand your query. Let me help you analyze your data. Could you please provide more specific details about what you'd like to know?"
         
         logger.info(f"Response content: {response_content}")
+        logger.info(f"Response type: {response_type}")
         logger.info(f"Chart data: {final_response.get('chart_data')}")
         logger.info(f"Chart type: {final_response.get('chart_type')}")
         
@@ -128,16 +139,25 @@ async def send_message(
         session.last_activity = datetime.now()
         db.commit()
         
-        return {
+        # Prepare response with all fields
+        response_data = {
             "message_id": assistant_message.id,
             "content": response_content,
             "message_type": MessageType.ASSISTANT,
             "timestamp": assistant_message.timestamp,
+            "response_type": response_type,
             "chartData": final_response.get('chart_data'),
             "chartType": final_response.get('chart_type'),
             "chartCode": final_response.get('code', ''),
-            "metadata": final_response.get('metadata')
+            "calculation_result": final_response.get('calculation_result'),
+            "data_preview": final_response.get('data_preview'),
+            "manipulation_result": final_response.get('manipulation_result'),
+            "metadata": final_response.get('metadata'),
+            "query_intent": result.get('query_intent'),
+            "query_analysis": result.get('query_analysis')
         }
+        
+        return response_data
         
     except Exception as e:
         logger.error(f"Error processing chat message: {e}")
@@ -176,9 +196,12 @@ async def get_session_messages(session_id: str, db: Session = Depends(get_db)):
                 "content": msg.content,
                 "message_type": msg.message_type,
                 "timestamp": msg.timestamp,
+                "response_type": ResponseType.CHART if msg.chart_data else ResponseType.TEXT,
                 "chartData": msg.chart_data,
                 "chartType": msg.chart_type,
                 "chartCode": msg.chart_code,
+                "calculation_result": None,
+                "data_preview": None,
                 "metadata": msg.message_metadata
             }
             for msg in messages
@@ -249,8 +272,11 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 response = {
                     "type": "response",
                     "content": final_response.get("content", ""),
+                    "response_type": final_response.get("response_type", ResponseType.TEXT),
                     "chart_data": final_response.get("chart_data"),
                     "chart_type": final_response.get("chart_type"),
+                    "calculation_result": final_response.get("calculation_result"),
+                    "data_preview": final_response.get("data_preview"),
                     "code": final_response.get("code")
                 }
                 

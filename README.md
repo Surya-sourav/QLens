@@ -1,240 +1,227 @@
 # QLens - Agentic-AI For Complex Data Analysis
 
-QLens is an intelligent data analysis AI-Agent that allows users to have natural conversations with their data. Upload CSV/Excel files and ask questions to get instant visualizations and insights powered by AI.
+QLens is an intelligent data analysis platform that allows you to have natural conversations with your data. Upload CSV or Excel files and ask questions in plain English to get insights, visualizations, calculations, and data manipulation results.
 
+## 🚀 New Features (Latest Update)
 
-## Visuals :
-<img width="1027" height="665" alt="Screenshot from 2025-08-02 11-14-27" src="https://github.com/user-attachments/assets/687c0201-e3c2-41ff-88bc-1bb875fea534" />
-<img width="1480" height="797" alt="Screenshot from 2025-08-02 12-37-04" src="https://github.com/user-attachments/assets/964b963e-de4e-4310-b452-d86c5e8e9ccf" />
-<img width="1789" height="876" alt="Screenshot from 2025-08-02 10-36-25" src="https://github.com/user-attachments/assets/e732fbb3-921d-4e90-a2c5-594d32cb1f8a" />
-<img width="1789" height="876" alt="Screenshot from 2025-08-02 10-38-51" src="https://github.com/user-attachments/assets/8aa1edbe-8f86-45a4-b0c7-7158a08efea9" />
+### 🤖 Agentic Data Analysis
+QLens now supports intelligent, agentic interactions with your data:
 
-## 🚀 Features
+- **📊 Smart Query Understanding**: Automatically detects your intent (calculations, visualizations, analysis, etc.)
+- **🧮 Data Calculations**: Ask for totals, averages, counts, and more
+- **🔍 Data Manipulation**: Filter, sort, group, and transform your data
+- **📈 Intelligent Analysis**: Get AI-powered insights and pattern recognition
+- **🎨 Dynamic Visualizations**: Generate charts based on your data and queries
 
-- **Natural Language Queries**: Ask questions about your data in plain English
-- **AI-Powered Analysis**: Advanced LLM integration for intelligent data interpretation
-- **Interactive Visualizations**: Generate charts, graphs, and plots automatically
-- **File Upload Support**: Upload CSV and Excel files for analysis
-- **Real-time Chat Interface**: Interactive conversation with your data
-- **PostgreSQL Integration**: Connect to external databases
-- **Docker Support**: Easy deployment with containerization
+### 📋 CSV/Excel Preview
+Enhanced file viewing capabilities:
+
+- **📄 Interactive Data Tables**: View your data with pagination and sorting
+- **📊 File Information**: See detailed metadata about your uploaded files
+- **🔍 Column Analysis**: Understand data types and column categories
+- **📱 Responsive Design**: Works seamlessly on desktop and mobile
+
+## ✨ Key Features
+
+### Natural Language Queries
+Ask questions in plain English:
+- "What's the total cost?"
+- "Show me transactions above $1000"
+- "Create a bar chart of expenses by category"
+- "Analyze spending patterns"
+- "Calculate the average balance"
+
+### Multi-Modal Responses
+Get rich, contextual responses:
+- **Text explanations** with insights and analysis
+- **Interactive charts** and visualizations
+- **Data tables** with filtered/sorted results
+- **Calculations** with formatted results
+- **Statistical summaries** and trends
+
+### File Support
+- **CSV files** (.csv)
+- **Excel files** (.xlsx, .xls)
+- **Large datasets** (up to 50MB)
+- **Automatic data type detection**
+- **Header recognition and processing**
+
+### Real-time Chat Interface
+- **WebSocket support** for real-time responses
+- **Session management** for conversation continuity
+- **Response type indicators** (calculation, visualization, analysis, etc.)
+- **Error handling** with helpful feedback
 
 ## 🏗️ Architecture
-<img width="869" height="666" alt="image" src="https://github.com/user-attachments/assets/b5aeb3ae-c7a2-4e0d-bda5-d856b18bba6f" />
 
-- **Frontend**: React.js with modern UI components
-- **Backend**: FastAPI with Python
-- **Database**: PostgreSQL (Neon DB)
-- **AI/LLM**: Cerebras API integration
-- **Containerization**: Docker & Docker Compose
-- **Orchestration**: LangGraph for workflow management
+### Backend (FastAPI + Python)
+- **LangGraph Orchestrator**: Intelligent query routing and processing
+- **Agentic Service**: Handles calculations, data manipulation, and analysis
+- **LLM Integration**: Cerebras AI for natural language understanding
+- **Code Execution**: Safe Python code execution for data processing
+- **Database**: SQLAlchemy with PostgreSQL for data persistence
 
-## 📋 Prerequisites
+### Frontend (React + TypeScript)
+- **Modern UI**: Clean, responsive interface with Tailwind CSS
+- **Real-time Updates**: WebSocket integration for live responses
+- **File Upload**: Drag-and-drop interface with progress tracking
+- **Data Preview**: Interactive tables with pagination
+- **Chart Rendering**: Dynamic visualization display
 
-- Docker and Docker Compose
-- Python 3.11+
-- Node.js 18+ (for frontend development)
-- PostgreSQL database (or Neon DB)
+## 🚀 Quick Start
 
-## 🛠️ Installation & Setup
+### Prerequisites
+- Python 3.8+
+- Node.js 16+
+- PostgreSQL (optional, SQLite for development)
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/Surya-sourav/QLens.git
-cd QLens
-```
-
-### 2. Environment Configuration
-
-Create a `.env` file in the root directory:
-
-```bash
-# Database Configuration
-DATABASE_URL=postgresql://username:password@host:port/database
-
-# Cerebras API Configuration
-CEREBRAS_API_KEY=your_cerebras_api_key
-
-# Redis Configuration
-REDIS_URL=redis://redis:6379
-
-# Application Configuration
-SECRET_KEY=your-secret-key
-DEBUG=True
-HOST=0.0.0.0
-PORT=8000
-
-# File Upload Configuration
-UPLOAD_DIR=./uploads
-MAX_FILE_SIZE=10485760
-```
-
-### 3. Using Docker (Recommended)
-
-```bash
-# Build and start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-### 4. Manual Setup
-
-#### Backend Setup
-
+### Backend Setup
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Initialize database
-python init_db.py
+# Set up environment variables
+cp env.example .env
+# Edit .env with your configuration
+
+# Run database migrations
+alembic upgrade head
 
 # Start the server
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn app.main:app --reload
 ```
 
-#### Frontend Setup
-
+### Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-## 🚀 Usage
-
-1. **Start the Application**: Run `docker-compose up -d`
-2. **Access the Interface**: Open `http://localhost:3000` in your browser
-3. **Upload Data**: Upload CSV or Excel files through the interface
-4. **Ask Questions**: Use natural language to query your data
-5. **View Results**: Get instant visualizations and insights
-
-### Example Queries
-
-- "Show me a bar chart of sales by region"
-- "What's the trend of revenue over time?"
-- "Create a pie chart showing customer distribution"
-- "Which products have the highest profit margins?"
-
-## 📁 Project Structure
-
+### Docker Setup
+```bash
+docker-compose up -d
 ```
-QLens/
-├── backend/                 # FastAPI backend
-│   ├── app/
-│   │   ├── models/         # Database models
-│   │   ├── routers/        # API endpoints
-│   │   ├── services/       # Business logic
-│   │   └── utils/          # Utility functions
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/               # React frontend
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── pages/         # Page components
-│   │   └── services/      # API services
-│   ├── package.json
-│   └── Dockerfile
-├── docker-compose.yml      # Docker orchestration
-├── .gitignore
-└── README.md
-```
-## Backend Structure In-Depth :
-```
-├── app
-│   ├── agents.py
-│   ├── config.py
-│   ├── db.py
-│   ├── __init__.py
-│   ├── main.py
-│   ├── models
-│   │   ├── database.py
-│   │   ├── __init__.py
-│   │   ├── __pycache__
-│   │   │   ├── database.cpython-312.pyc
-│   │   │   ├── __init__.cpython-312.pyc
-│   │   │   └── schemas.cpython-312.pyc
-│   │   └── schemas.py
-│   ├── models.py
-│   ├── __pycache__
-│   │   ├── agents.cpython-312.pyc
-│   │   ├── config.cpython-312.pyc
-│   │   ├── db.cpython-312.pyc
-│   │   ├── __init__.cpython-312.pyc
-│   │   ├── main.cpython-312.pyc
-│   │   ├── main.cpython-39.pyc
-│   │   └── sandbox.cpython-312.pyc
-│   ├── routers
-│   │   ├── chat.py
-│   │   ├── database.py
-│   │   ├── __init__.py
-│   │   ├── __pycache__
-│   │   │   ├── chat.cpython-312.pyc
-│   │   │   ├── database.cpython-312.pyc
-│   │   │   ├── __init__.cpython-312.pyc
-│   │   │   ├── upload.cpython-312.pyc
-│   │   │   └── upload.cpython-39.pyc
-│   │   └── upload.py
-│   ├── sample.csv
-│   ├── sandbox.py
-│   ├── services
-│   │   ├── code_executor.py
-│   │   ├── data_parser.py
-│   │   ├── db_connector.py
-│   │   ├── __init__.py
-│   │   ├── langgraph_orchestrator.py
-│   │   ├── llm.py
-│   │   ├── llm_service.py
-│   │   ├── orchestrator.py
 
+## 📖 Usage Examples
 
-```
+### 1. Upload and Preview Data
+1. Upload a CSV or Excel file
+2. Click the table icon to preview your data
+3. Explore file information and column details
+
+### 2. Ask Questions
+Try these example queries:
+
+**Calculations:**
+- "What's the total cost?"
+- "Calculate the average balance"
+- "Show me the maximum transaction amount"
+- "Count the number of transactions"
+
+**Data Manipulation:**
+- "Show me transactions above $1000"
+- "Sort by date descending"
+- "Filter by category 'Food'"
+- "Show the top 10 largest transactions"
+
+**Analysis:**
+- "Analyze spending patterns"
+- "Find trends in the data"
+- "What are the most common categories?"
+- "Identify outliers in the data"
+
+**Visualizations:**
+- "Create a bar chart of expenses by category"
+- "Show me a line chart of spending over time"
+- "Generate a pie chart of budget allocation"
+- "Create a scatter plot of income vs expenses"
+
+### 3. View Results
+- **Calculation results** appear with formatted numbers and units
+- **Data manipulation** shows filtered/sorted tables
+- **Analysis results** provide insights and recommendations
+- **Charts** render dynamically with interactive features
+
 ## 🔧 Configuration
 
 ### Environment Variables
+```bash
+# Database
+DATABASE_URL=postgresql://user:password@localhost/qlens
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | Required |
-| `CEREBRAS_API_KEY` | Cerebras API key | Required |
-| `REDIS_URL` | Redis connection string | `redis://redis:6379` |
-| `SECRET_KEY` | Application secret key | Required |
-| `DEBUG` | Debug mode | `True` |
-| `HOST` | Server host | `0.0.0.0` |
-| `PORT` | Server port | `8000` |
+# AI Service
+CEREBRAS_API_KEY=your_cerebras_api_key
+
+# File Upload
+UPLOAD_DIR=./uploads
+MAX_FILE_SIZE=52428800
+
+# CORS
+CORS_ORIGINS=["http://localhost:3000"]
+```
 
 ### API Endpoints
 
-- `POST /api/v1/upload/file` - Upload files
-- `POST /api/v1/chat/message` - Send chat messages
-- `GET /api/v1/upload/files` - List uploaded files
+#### Chat
+- `POST /api/v1/chat/message` - Send a message
 - `GET /api/v1/chat/sessions` - List chat sessions
+- `GET /api/v1/chat/session/{id}/messages` - Get session messages
+
+#### File Upload
+- `POST /api/v1/upload/file` - Upload a file
+- `GET /api/v1/upload/files` - List uploaded files
+- `DELETE /api/v1/upload/file/{id}` - Delete a file
+
+#### CSV Preview
+- `POST /api/v1/csv-preview/preview` - Get paginated data preview
+- `GET /api/v1/csv-preview/file/{id}/info` - Get file information
+- `GET /api/v1/csv-preview/file/{id}/columns` - Get column details
+
+## 🧪 Testing
+
+Run the comprehensive test suite:
+```bash
+# Test agentic features
+node test_agentic_features.js
+
+# Test backend
+cd backend
+pytest
+
+# Test frontend
+cd frontend
+npm test
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
-## 📝 License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
-If you encounter any issues or have questions:
+- **Documentation**: Check the inline code comments and API docs
+- **Issues**: Report bugs and feature requests on GitHub
+- **Discussions**: Join the community discussions
 
-1. Check the [Issues](https://github.com/Surya-sourav/QLens/issues) page
-2. Create a new issue with detailed information
-3. Contact the development team
+## 🔮 Roadmap
 
+- [ ] Database connection support (PostgreSQL, MySQL)
+- [ ] Advanced chart types (heatmaps, 3D plots)
+- [ ] Data export functionality
+- [ ] Collaborative features
+- [ ] Mobile app
+- [ ] API rate limiting and authentication
+- [ ] Advanced analytics and machine learning
 
+---
+
+**QLens** - Making data analysis conversational and accessible to everyone! 🚀 

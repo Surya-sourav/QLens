@@ -22,6 +22,23 @@ class ChartType(str, Enum):
     UNKNOWN = "unknown"
 
 
+class ResponseType(str, Enum):
+    CHART = "chart"
+    TEXT = "text"
+    DATA_MANIPULATION = "data_manipulation"
+    CSV_PREVIEW = "csv_preview"
+    CALCULATION = "calculation"
+    ANALYSIS = "analysis"
+
+
+class QueryIntent(str, Enum):
+    VISUALIZATION = "visualization"
+    DATA_ANALYSIS = "data_analysis"
+    CALCULATION = "calculation"
+    DATA_MANIPULATION = "data_manipulation"
+    GENERAL_QUERY = "general_query"
+
+
 class DatabaseConnection(BaseModel):
     host: str
     port: int = 5432
@@ -71,10 +88,32 @@ class ChatResponse(BaseModel):
     content: str
     message_type: MessageType
     timestamp: datetime
+    response_type: Optional[ResponseType] = None
     chartData: Optional[Dict[str, Any]] = None
     chartType: Optional[ChartType] = None
     chartCode: Optional[str] = None
+    calculation_result: Optional[Dict[str, Any]] = None
+    data_preview: Optional[Dict[str, Any]] = None
+    manipulation_result: Optional[Dict[str, Any]] = None
     metadata: Optional[Dict[str, Any]] = None
+    query_intent: Optional[QueryIntent] = None
+    query_analysis: Optional[Dict[str, Any]] = None
+
+
+class DataManipulationResult(BaseModel):
+    operation: str
+    result: Any
+    description: str
+    affected_rows: Optional[int] = None
+    summary: Optional[str] = None
+
+
+class CalculationResult(BaseModel):
+    operation: str
+    result: Any
+    formula: Optional[str] = None
+    description: str
+    units: Optional[str] = None
 
 
 class DataSource(BaseModel):
@@ -90,6 +129,7 @@ class CodeExecutionRequest(BaseModel):
     code: str
     data_context: Optional[Dict[str, Any]] = None
     timeout: int = 30
+    execution_type: Optional[str] = "chart"  # "chart", "calculation", "data_manipulation"
 
 
 class CodeExecutionResponse(BaseModel):
@@ -97,6 +137,8 @@ class CodeExecutionResponse(BaseModel):
     output: Optional[str] = None
     error: Optional[str] = None
     chart_data: Optional[Dict[str, Any]] = None
+    calculation_result: Optional[Dict[str, Any]] = None
+    data_manipulation_result: Optional[Dict[str, Any]] = None
     execution_time: float
 
 
@@ -120,3 +162,19 @@ class SessionInfo(BaseModel):
     data_sources: List[str]
     created_at: datetime
     last_activity: datetime
+
+
+class CSVPreviewRequest(BaseModel):
+    file_id: str
+    page: int = 1
+    page_size: int = 50
+
+
+class CSVPreviewResponse(BaseModel):
+    success: bool
+    data: List[Dict[str, Any]]
+    columns: List[str]
+    total_rows: int
+    current_page: int
+    total_pages: int
+    page_size: int

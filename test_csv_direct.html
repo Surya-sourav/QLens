@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct CSV Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin: 10px 5px; font-size: 16px; }
+        .button:hover { background: #0056b3; }
+        .button.success { background: #28a745; }
+        .button.error { background: #dc3545; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .result.success { border-left-color: #28a745; background: #d4edda; }
+        .result.error { border-left-color: #dc3545; background: #f8d7da; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .data-table th { background-color: #f2f2f2; font-weight: bold; }
+        .loading { color: #007bff; font-style: italic; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: white; margin: 5% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 1000px; max-height: 80vh; overflow-y: auto; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: #000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Direct CSV Preview Test</h1>
+        <p>This page directly tests the CSV preview functionality without the React app.</p>
+        
+        <div>
+            <button class="button" onclick="testBackend()">1. Test Backend</button>
+            <button class="button" onclick="getFiles()">2. Get Files</button>
+            <button class="button" onclick="showCSVPreview()">3. Show CSV Preview</button>
+            <button class="button success" onclick="runFullTest()">🚀 Full Test</button>
+        </div>
+        
+        <div id="results"></div>
+        
+        <!-- CSV Preview Modal -->
+        <div id="csvModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>📊 CSV Preview</h2>
+                <div id="modalContent">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let currentFileId = null;
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+        
+        async function testBackend() {
+            try {
+                log('Testing backend connection...', 'loading');
+                const response = await fetch('http://localhost:8000/health');
+                const data = await response.json();
+                log(`✅ Backend is running: ${JSON.stringify(data)}`, 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Backend error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function getFiles() {
+            try {
+                log('Getting file list...', 'loading');
+                const response = await fetch(`${API_BASE}/upload/files`);
+                const files = await response.json();
+                
+                if (files.length === 0) {
+                    log('❌ No files found. Please upload a file first.', 'error');
+                    return false;
+                }
+                
+                currentFileId = files[0].id;
+                log(`✅ Found ${files.length} files. Using file: ${currentFileId}`, 'success');
+                log(`File name: ${files[0].original_filename}`, 'success');
+                return true;
+            } catch (error) {
+                log(`❌ File list error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function showCSVPreview() {
+            if (!currentFileId) {
+                log('❌ No file ID available. Get files first.', 'error');
+                return;
+            }
+            
+            try {
+                log(`Opening CSV preview for file: ${currentFileId}`, 'loading');
+                
+                // Show modal
+                document.getElementById('csvModal').style.display = 'block';
+                document.getElementById('modalContent').innerHTML = '<div class="loading">Loading CSV data...</div>';
+                
+                // Get CSV preview data
+                const response = await fetch(`${API_BASE}/csv-preview/preview`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        file_id: currentFileId,
+                        page: 1,
+                        page_size: 20
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`✅ CSV preview loaded! Rows: ${data.total_rows}, Columns: ${data.columns.length}`, 'success');
+                
+                // Display data in modal
+                displayCSVData(data);
+                
+            } catch (error) {
+                log(`❌ CSV preview error: ${error.message}`, 'error');
+                document.getElementById('modalContent').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function displayCSVData(data) {
+            const modalContent = document.getElementById('modalContent');
+            
+            if (!data.data || data.data.length === 0) {
+                modalContent.innerHTML = '<div class="error">No data to display</div>';
+                return;
+            }
+            
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <h3>📊 CSV Data Preview</h3>
+                    <p><strong>Total Rows:</strong> ${data.total_rows} | <strong>Columns:</strong> ${data.columns.length}</p>
+                </div>
+            `;
+            
+            // Create table
+            html += '<table class="data-table">';
+            
+            // Header
+            html += '<thead><tr>';
+            data.columns.forEach(col => {
+                html += `<th>${col}</th>`;
+            });
+            html += '</tr></thead>';
+            
+            // Body
+            html += '<tbody>';
+            data.data.forEach(row => {
+                html += '<tr>';
+                data.columns.forEach(col => {
+                    const value = row[col] || '';
+                    html += `<td>${value}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            
+            modalContent.innerHTML = html;
+        }
+        
+        function closeModal() {
+            document.getElementById('csvModal').style.display = 'none';
+        }
+        
+        async function runFullTest() {
+            log('🚀 Starting full CSV preview test...', 'loading');
+            
+            const step1 = await testBackend();
+            if (!step1) return;
+            
+            const step2 = await getFiles();
+            if (!step2) return;
+            
+            await showCSVPreview();
+            
+            log('🎉 Full test completed!', 'success');
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('csvModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+        
+        // Auto-run on page load
+        window.onload = function() {
+            log('📋 Direct CSV Preview Test Page Loaded');
+            log('Click "Full Test" to test everything automatically');
+        };
+    </script>
+</body>
+</html> 

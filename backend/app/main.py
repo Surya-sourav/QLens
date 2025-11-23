@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 from app.config import settings
-from app.routers import upload, chat, database
+from app.routers import upload, chat, database, csv_preview
 from app.models.database import Base, engine
 
 # Configure logging
@@ -49,7 +49,7 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,6 +59,7 @@ app.add_middleware(
 app.include_router(upload.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
 app.include_router(database.router, prefix="/api/v1")
+app.include_router(csv_preview.router, prefix="/api/v1")
 
 # Mount static files for uploads
 app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
@@ -91,12 +92,16 @@ async def api_info():
             "PostgreSQL database connections",
             "AI-powered data analysis",
             "Chart generation",
-            "Real-time chat interface"
+            "Real-time chat interface",
+            "Agentic data manipulation",
+            "CSV/Excel preview",
+            "Data calculations and insights"
         ],
         "endpoints": {
             "upload": "/api/v1/upload",
             "chat": "/api/v1/chat",
-            "database": "/api/v1/database"
+            "database": "/api/v1/database",
+            "csv_preview": "/api/v1/csv-preview"
         }
     }
 

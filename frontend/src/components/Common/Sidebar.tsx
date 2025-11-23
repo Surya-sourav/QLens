@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Database, Trash2, Plus, MessageSquare } from 'lucide-react';
+import { FileText, Database, Trash2, Plus, MessageSquare, Eye } from 'lucide-react';
 import { useChat } from '../../hooks/useChat';
 import { useFileUpload } from '../../hooks/useFileUpload';
 import { apiService } from '../../services/api';
-import { DataSource } from '../../types';
+import type { DataSource } from '../../types';
 import toast from 'react-hot-toast';
+import CSVPreview from '../Upload/CSVPreview';
 
 const Sidebar: React.FC = () => {
   const { dataSources, addDataSource, removeDataSource, createNewSession } = useChat();
@@ -12,6 +13,8 @@ const Sidebar: React.FC = () => {
   const [databaseConnections, setDatabaseConnections] = useState<DataSource[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showCSVPreview, setShowCSVPreview] = useState(false);
+  const [selectedFileForPreview, setSelectedFileForPreview] = useState<string | null>(null);
 
   useEffect(() => {
     loadDatabaseConnections();
@@ -113,6 +116,17 @@ const Sidebar: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => {
+                          console.log('Sidebar CSV preview button clicked for file:', file.id);
+                          setSelectedFileForPreview(file.id);
+                          setShowCSVPreview(true);
+                        }}
+                        className="p-1 rounded text-gray-400 hover:text-blue-600"
+                        title="View CSV preview"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleDataSourceToggle(file.id, 'file')}
                         className={`p-1 rounded ${
@@ -227,6 +241,21 @@ const Sidebar: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {/* CSV Preview Modal */}
+      {showCSVPreview && selectedFileForPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <CSVPreview 
+              fileId={selectedFileForPreview} 
+              onClose={() => {
+                setShowCSVPreview(false);
+                setSelectedFileForPreview(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

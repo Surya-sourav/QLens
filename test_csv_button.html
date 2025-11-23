@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Preview Button Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .button {
+            background-color: #2563eb;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .button:hover {
+            background-color: #1d4ed8;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSV Preview Button Test</h1>
+    
+    <div class="test-section">
+        <h2>Backend API Test</h2>
+        <button class="button" onclick="testBackendAPI()">Test Backend API</button>
+        <div id="backend-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Frontend Integration Test</h2>
+        <p>To test the frontend CSV preview button:</p>
+        <ol>
+            <li>Open <a href="http://localhost:3001" target="_blank">http://localhost:3001</a></li>
+            <li>Upload a CSV file</li>
+            <li>Ask: "Add a column average to the csv that is the average of mrp values of the product!"</li>
+            <li>Look for the "View CSV Preview" button in the response</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h2>Expected Behavior</h2>
+        <ul>
+            <li>✅ Backend should return <code>manipulation_result</code> field</li>
+            <li>✅ Frontend should display "View CSV Preview" button</li>
+            <li>✅ Clicking the button should open CSV viewer modal</li>
+            <li>✅ CSV viewer should have download functionality</li>
+        </ul>
+    </div>
+
+    <script>
+        async function testBackendAPI() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: "Add a column average to the csv that is the average of mrp values of the product!",
+                        data_sources: ["9cc4fd00-40b5-4868-82dc-34dee3941594"]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.manipulation_result) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Backend API Working!</div>
+                        <p><strong>Response Type:</strong> ${data.response_type}</p>
+                        <p><strong>Query Intent:</strong> ${data.query_intent}</p>
+                        <p><strong>Operation:</strong> ${data.manipulation_result.operation}</p>
+                        <p><strong>Affected Rows:</strong> ${data.manipulation_result.affected_rows}</p>
+                        <p><strong>Has CSV Preview Button:</strong> ${data.manipulation_result.description.includes('CSV Preview') ? 'Yes' : 'No'}</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">❌ Backend API Issue</div>
+                        <p>No manipulation_result found in response</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Backend API Error</div>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 

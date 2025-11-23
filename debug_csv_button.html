@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Preview Button Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .button {
+            background-color: #2563eb;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #1d4ed8;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSV Preview Button Debug</h1>
+    
+    <div class="test-section">
+        <h2>1. Backend API Test</h2>
+        <button class="button" onclick="testBackendAPI()">Test Backend API</button>
+        <div id="backend-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Frontend Integration Test</h2>
+        <p>Steps to test the CSV preview button:</p>
+        <ol>
+            <li>Open <a href="http://localhost:3001" target="_blank">http://localhost:3001</a></li>
+            <li>Open browser developer tools (F12)</li>
+            <li>Go to Console tab</li>
+            <li>Upload a CSV file if you haven't already</li>
+            <li>Type this exact message: <code>"Add a column average to the csv that is the average of mrp values of the product!"</code></li>
+            <li>Look for debug logs in the console</li>
+            <li>Check if you see the "View CSV Preview" button in the response</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Expected Console Logs</h2>
+        <p>You should see these logs in the browser console:</p>
+        <pre>
+API Response received: {messageId: "...", responseType: "data_manipulation", manipulationResult: {...}}
+Response type: data_manipulation
+Manipulation result: {operation: "manipulation", result: [...], description: "..."}
+        </pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Troubleshooting</h2>
+        <ul>
+            <li><strong>If no logs appear:</strong> The API call is failing</li>
+            <li><strong>If logs show but no button:</strong> The component rendering is failing</li>
+            <li><strong>If button appears but doesn't work:</strong> The modal/CSV preview component has issues</li>
+        </ul>
+    </div>
+
+    <script>
+        async function testBackendAPI() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: "Add a column average to the csv that is the average of mrp values of the product!",
+                        data_sources: ["9cc4fd00-40b5-4868-82dc-34dee3941594"]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                let resultHTML = '';
+                
+                if (data.manipulation_result) {
+                    resultHTML += '<div class="success">✅ Backend API Working!</div>';
+                    resultHTML += `<p><strong>Response Type:</strong> ${data.response_type}</p>`;
+                    resultHTML += `<p><strong>Query Intent:</strong> ${data.query_intent}</p>`;
+                    resultHTML += `<p><strong>Operation:</strong> ${data.manipulation_result.operation}</p>`;
+                    resultHTML += `<p><strong>Affected Rows:</strong> ${data.manipulation_result.affected_rows}</p>`;
+                    resultHTML += `<p><strong>Has CSV Preview Instructions:</strong> ${data.manipulation_result.description.includes('CSV Preview') ? 'Yes' : 'No'}</p>`;
+                    
+                    if (data.manipulation_result.description.includes('CSV Preview')) {
+                        resultHTML += '<div class="success">✅ CSV Preview instructions are included!</div>';
+                    } else {
+                        resultHTML += '<div class="warning">⚠️ CSV Preview instructions are missing!</div>';
+                    }
+                } else {
+                    resultHTML += '<div class="error">❌ Backend API Issue</div>';
+                    resultHTML += '<p>No manipulation_result found in response</p>';
+                }
+                
+                resultHTML += '<h3>Full Response:</h3>';
+                resultHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                resultDiv.innerHTML = resultHTML;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Backend API Error</div>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 

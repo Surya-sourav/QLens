@@ -3,9 +3,13 @@ export interface ChatMessage {
   content: string;
   messageType: 'user' | 'assistant' | 'system';
   timestamp: string;
+  responseType?: 'chart' | 'text' | 'data_manipulation' | 'csv_preview' | 'calculation' | 'analysis';
   chartData?: any;
   chartType?: string;
   chartCode?: string;
+  calculationResult?: any;
+  dataPreview?: any;
+  manipulationResult?: any;
   metadata?: any;
 }
 
@@ -20,9 +24,13 @@ export interface ChatResponse {
   content: string;
   messageType: 'user' | 'assistant' | 'system';
   timestamp: string;
+  responseType?: 'chart' | 'text' | 'data_manipulation' | 'csv_preview' | 'calculation' | 'analysis';
   chartData?: any;
   chartType?: string;
   chartCode?: string;
+  calculationResult?: any;
+  dataPreview?: any;
+  manipulationResult?: any;
   metadata?: any;
 }
 
@@ -101,6 +109,9 @@ export interface WebSocketMessage {
   chartData?: ChartData;
   chartType?: string;
   code?: string;
+  responseType?: string;
+  calculationResult?: any;
+  dataPreview?: any;
 }
 
 export interface FileUploadState {
@@ -128,4 +139,71 @@ export interface AppState {
   chat: ChatState;
   upload: FileUploadState;
   database: DatabaseState;
+}
+
+// CSV Preview Types
+export interface CSVPreviewRequest {
+  file_id: string;
+  page: number;
+  page_size: number;
+}
+
+export interface CSVPreviewResponse {
+  success: boolean;
+  data: Record<string, any>[];
+  columns: string[];
+  totalRows: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+}
+
+export interface FileInfo {
+  success: boolean;
+  fileInfo: {
+    id: string;
+    filename: string;
+    fileType: string;
+    size: number;
+    uploadedAt: string;
+    processed: boolean;
+  };
+  dataInfo: {
+    totalRows: number;
+    totalColumns: number;
+    columns: string[];
+    numericColumns: string[];
+    categoricalColumns: string[];
+    hasHeaders: boolean;
+    sampleDataAvailable: boolean;
+  };
+}
+
+export interface FileColumns {
+  success: boolean;
+  columns: {
+    originalColumns: string[];
+    actualColumns: string[];
+    numericColumns: string[];
+    categoricalColumns: string[];
+    dataTypes: Record<string, string>;
+    hasHeaders: boolean;
+    totalColumns: number;
+  };
+}
+
+// Agentic Response Types
+export interface CalculationResult {
+  operation: string;
+  result: number | string;
+  description: string;
+  units?: string;
+}
+
+export interface DataManipulationResult {
+  operation: string;
+  result: Record<string, any>[];
+  description: string;
+  affectedRows?: number;
+  summary?: string;
 }

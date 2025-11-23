@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useFileUpload } from '../../hooks/useFileUpload';
-import { Upload, FileText, Trash2, Download, Eye } from 'lucide-react';
+import { Upload, FileText, Trash2, Download, Eye, Table } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiService } from '../../services/api';
+import CSVPreview from './CSVPreview';
 
 interface FileUploadProps {
   setLatestFileId?: (id: string) => void;
@@ -11,6 +12,7 @@ interface FileUploadProps {
 
 const FileUpload: React.FC<FileUploadProps> = ({ setLatestFileId }) => {
   const { files, uploading, error, uploadFile, deleteFile, clearError } = useFileUpload();
+  const [selectedFileForPreview, setSelectedFileForPreview] = useState<string | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     try {
@@ -89,6 +91,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ setLatestFileId }) => {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const handlePreviewClick = (fileId: string) => {
+    setSelectedFileForPreview(fileId);
+  };
+
+  const handleClosePreview = () => {
+    setSelectedFileForPreview(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* Upload Area */}
@@ -112,6 +122,44 @@ const FileUpload: React.FC<FileUploadProps> = ({ setLatestFileId }) => {
           <div className="mt-4">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
             <p className="text-sm text-gray-500 mt-2">Uploading and processing...</p>
+          </div>
+        )}
+        
+        {/* Show CSV Preview button if files are available */}
+        {files.length > 0 && !uploading && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-center space-x-4">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const latestFile = files[0]; // Get the most recent file
+                  if (latestFile && latestFile.dataPreview) {
+                    handlePreviewClick(latestFile.id);
+                  } else {
+                    toast.success('Please upload a file first to view CSV preview');
+                  }
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium flex items-center space-x-2"
+              >
+                <Table className="h-4 w-4" />
+                <span>View Latest CSV</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const latestFile = files[0]; // Get the most recent file
+                  if (latestFile && latestFile.dataPreview) {
+                    handlePreviewClick(latestFile.id);
+                  } else {
+                    toast.success('Please upload a file first to view CSV preview');
+                  }
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium flex items-center space-x-2"
+              >
+                <Eye className="h-4 w-4" />
+                <span>CSV Preview</span>
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -169,16 +217,26 @@ const FileUpload: React.FC<FileUploadProps> = ({ setLatestFileId }) => {
                 </div>
                 <div className="flex items-center space-x-2">
                   {file.dataPreview && (
-                    <button
-                      onClick={() => {
-                        console.log('Data preview:', file.dataPreview);
-                        toast.success('Data preview available in console');
-                      }}
-                      className="p-2 text-gray-400 hover:text-gray-600"
-                      title="View data preview"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handlePreviewClick(file.id)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium flex items-center space-x-1"
+                        title="View CSV preview"
+                      >
+                        <Table className="h-3 w-3" />
+                        <span>View CSV Preview</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('Data preview:', file.dataPreview);
+                          toast.success('Data preview available in console');
+                        }}
+                        className="p-2 text-gray-400 hover:text-gray-600"
+                        title="View data preview"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={() => deleteFile(file.id)}
@@ -194,6 +252,18 @@ const FileUpload: React.FC<FileUploadProps> = ({ setLatestFileId }) => {
         </div>
       )}
 
+      {/* CSV Preview Modal */}
+      {selectedFileForPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <CSVPreview 
+              fileId={selectedFileForPreview} 
+              onClose={handleClosePreview}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Instructions */}
       <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
         <div className="flex">
@@ -202,12 +272,15 @@ const FileUpload: React.FC<FileUploadProps> = ({ setLatestFileId }) => {
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-blue-800">
-              Supported File Types
+              Supported File Types & Features
             </h3>
             <div className="mt-2 text-sm text-blue-700">
               <p>• CSV files (.csv)</p>
               <p>• Excel files (.xlsx, .xls)</p>
               <p>• Maximum file size: 50MB</p>
+              <p>• View data preview with pagination</p>
+              <p>• Analyze data with AI-powered insights</p>
+              <p>• Perform calculations and data manipulation</p>
             </div>
           </div>
         </div>

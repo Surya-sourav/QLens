@@ -8,7 +8,9 @@ import {
   FileUpload,
   DataSource,
   SessionInfo,
-  ApiResponse
+  ApiResponse,
+  CSVPreviewRequest,
+  CSVPreviewResponse
 } from '../types/index';
 
 class ApiService {
@@ -89,6 +91,22 @@ class ApiService {
 
   async deleteFile(fileId: string): Promise<ApiResponse> {
     const response: AxiosResponse<ApiResponse> = await this.api.delete(`/upload/file/${fileId}`);
+    return response.data;
+  }
+
+  // CSV Preview endpoints
+  async getCSVPreview(request: CSVPreviewRequest): Promise<CSVPreviewResponse> {
+    const response: AxiosResponse<CSVPreviewResponse> = await this.api.post('/csv-preview/preview', request);
+    return response.data;
+  }
+
+  async getFileInfo(fileId: string): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.get(`/csv-preview/file/${fileId}/info`);
+    return response.data;
+  }
+
+  async getFileColumns(fileId: string): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.get(`/csv-preview/file/${fileId}/columns`);
     return response.data;
   }
 

@@ -109,6 +109,40 @@ class UploadManager:
                 dtype_str = getattr(dtype, 'name', str(dtype))
                 dtypes_dict[str(col)] = dtype_str
                 logging.debug(f"[DEBUG] dtype for column {col}: {dtype} (type: {type(dtype)}), name: {dtype_str}")
+            
+            # Detect numeric columns BEFORE converting to object dtype
+            numeric_columns = [str(col) for col in df.select_dtypes(include=['number']).columns.tolist()]
+            categorical_columns = [str(col) for col in df.select_dtypes(include=['object']).columns.tolist()]
+            
+            logging.info(f"[DEBUG] Initial numeric columns from select_dtypes: {numeric_columns}")
+            logging.info(f"[DEBUG] Initial categorical columns from select_dtypes: {categorical_columns}")
+            
+            # Enhanced numeric column detection for string columns that contain numeric data
+            import re
+            for col in categorical_columns[:]:  # Create a copy to iterate
+                col_str = str(col)
+                # Check if column name suggests it might be numeric
+                if any(keyword in col_str.lower() for keyword in ['price', 'cost', 'amount', 'mrp', 'value', 'quantity', 'rating', 'score', 'total', 'sum']):
+                    # Check if the column data is mostly numeric
+                    sample_values = df[col].dropna().head(10).astype(str)
+                    numeric_count = 0
+                    total_count = len(sample_values)
+                    
+                    for val in sample_values:
+                        # Remove common non-numeric characters and check if it's numeric
+                        cleaned_val = re.sub(r'[^\d.\-]', '', str(val))
+                        if cleaned_val and cleaned_val.replace('.', '').replace('-', '').isdigit():
+                            numeric_count += 1
+                    
+                    # If more than 70% of sample values are numeric, consider it a numeric column
+                    if total_count > 0 and (numeric_count / total_count) > 0.7:
+                        numeric_columns.append(col_str)
+                        categorical_columns.remove(col_str)
+                        logging.info(f"[DEBUG] Detected numeric column from string data: {col_str}")
+            
+            logging.info(f"[DEBUG] Final numeric columns: {numeric_columns}")
+            logging.info(f"[DEBUG] Final categorical columns: {categorical_columns}")
+            
             # Convert all columns to native Python types for preview
             df_native = df.convert_dtypes().astype(object)
             preview = {
@@ -117,9 +151,12 @@ class UploadManager:
                 "dtypes": dtypes_dict,
                 "head": self._make_json_serializable(df_native.head(5).to_dict(orient='records')),
                 "null_counts": self._make_json_serializable(df_native.isnull().sum().to_dict()),
-                "numeric_columns": [str(col) for col in df_native.select_dtypes(include=['number']).columns.tolist()],
-                "categorical_columns": [str(col) for col in df_native.select_dtypes(include=['object']).columns.tolist()]
+                "numeric_columns": numeric_columns,
+                "categorical_columns": categorical_columns
             }
+            
+            logging.info(f"[DEBUG] Preview numeric_columns: {preview['numeric_columns']}")
+            logging.info(f"[DEBUG] Preview categorical_columns: {preview['categorical_columns']}")
             # Clean preview for numeric columns (e.g., strip $ and convert to float for Debit/Credit)
             import re
             preview_head = df_native.head(5).to_dict(orient='records')
@@ -130,8 +167,9 @@ class UploadManager:
                         # Remove $ and commas, convert to float if possible
                         cleaned = re.sub(r'[^0-9.\-]', '', val)
                         try:
-                            row[col] = float(cleaned)
+                            row[col] = float(cleaned) if cleaned else val
                         except Exception:
+                            # Keep original value if conversion fails
                             pass
             preview["head"] = self._make_json_serializable(preview_head)
             import json

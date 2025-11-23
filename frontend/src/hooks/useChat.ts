@@ -147,14 +147,22 @@ export const useChat = () => {
         data_sources: sourcesToUse,  // FIXED: Use data_sources to match backend schema
       });
 
+      console.log('API Response received:', response);
+      console.log('Response type:', response.responseType);
+      console.log('Manipulation result:', response.manipulationResult);
+
       const assistantMessage: ChatMessage = {
         id: response.messageId,
         content: response.content,
         messageType: 'assistant',
         timestamp: response.timestamp,
+        responseType: response.responseType,
         chartData: response.chartData,
         chartType: response.chartType,
         chartCode: response.chartCode,
+        calculationResult: response.calculationResult,
+        dataPreview: response.dataPreview,
+        manipulationResult: response.manipulationResult,
         metadata: response.metadata,
       };
 

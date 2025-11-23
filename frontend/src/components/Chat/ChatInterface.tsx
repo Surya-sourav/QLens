@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Eye, Send, Bot, Calculator, Table, BarChart3, TrendingUp } from 'lucide-react';
+import { useChat } from '../../hooks/useChat';
+import { useWebSocket } from '../../hooks/useWebSocket';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import { useChat } from '../../hooks/useChat';
-import { Send, Bot } from 'lucide-react';
+import CSVPreview from '../Upload/CSVPreview';
+import toast from 'react-hot-toast';
+import { apiService } from '../../services/api';
 
 interface ChatInterfaceProps {
   latestFileId?: string;
@@ -17,6 +21,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
     sendMessage,
     isConnected
   } = useChat();
+  
+  const [showCSVPreview, setShowCSVPreview] = React.useState(false);
+  const [selectedFileForPreview, setSelectedFileForPreview] = React.useState<string | null>(null);
 
   // Clear old localStorage data on mount to ensure fresh start
   React.useEffect(() => {
@@ -31,7 +38,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
   const getEffectiveFileId = async () => {
     try {
       // ALWAYS try to get the latest file from backend first
-      const { apiService } = await import('../../services/api');
       const files = await apiService.getUploadedFiles();
       console.log('ChatInterface: Files from API:', files);
       if (files && files.length > 0) {
@@ -83,6 +89,43 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
     sendMessage(message);
   };
 
+  const handleCSVPreviewClick = async () => {
+    console.log('CSV Preview button clicked');
+    console.log('Data sources:', dataSources);
+    
+    if (dataSources.length === 0) {
+      console.log('No data sources available');
+      toast.error('No files connected to view CSV preview');
+      return;
+    }
+    
+    const latestFileId = dataSources[0];
+    console.log('Opening CSV preview for file:', latestFileId);
+    
+    try {
+      // Verify file exists before opening preview
+      const files = await apiService.getUploadedFiles();
+      const fileExists = files.some(file => file.id === latestFileId);
+      
+      if (!fileExists) {
+        toast.error('File not found. Please reconnect the file.');
+        return;
+      }
+      
+      setSelectedFileForPreview(latestFileId);
+      setShowCSVPreview(true);
+      toast.success('Opening CSV preview...');
+    } catch (error) {
+      console.error('Error opening CSV preview:', error);
+      toast.error('Failed to open CSV preview. Please try again.');
+    }
+  };
+
+  const handleCloseCSVPreview = () => {
+    setShowCSVPreview(false);
+    setSelectedFileForPreview(null);
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-white rounded-lg shadow-sm border border-gray-200">
       {/* Header */}
@@ -106,6 +149,28 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
           <span className="text-xs text-gray-500">
             {isConnected ? 'Connected' : 'Disconnected'}
           </span>
+          {dataSources.length > 0 && (
+            <button
+              onClick={handleCSVPreviewClick}
+              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium flex items-center space-x-1"
+              title="View CSV preview"
+            >
+              <Eye className="h-3 w-3" />
+              <span>View CSV</span>
+            </button>
+          )}
+        </div>
+        
+        {/* Always visible CSV preview button */}
+        <div className="mt-4">
+          <button
+            onClick={handleCSVPreviewClick}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center space-x-2"
+            title="View CSV preview"
+          >
+            <Eye className="h-4 w-4" />
+            <span>📊 View CSV Data</span>
+          </button>
         </div>
       </div>
 
@@ -142,7 +207,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
               Start a conversation
             </h3>
             <p className="text-gray-500 max-w-md">
-              Ask questions about your data, request visualizations, or get insights from your uploaded files and database connections.
+              Ask questions about your data, request visualizations, perform calculations, or get insights from your uploaded files and database connections.
             </p>
             {dataSources.length === 0 && (
               <div className="mt-4 p-3 bg-blue-50 rounded-md">
@@ -152,12 +217,49 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
               </div>
             )}
             {dataSources.length > 0 && (
-              <div className="mt-4 p-3 bg-green-50 rounded-md">
-                <p className="text-sm text-green-800">
-                  ✅ You have {dataSources.length} data source(s) connected. You can now ask questions about your data!
-                </p>
+              <div className="mt-4 space-y-3">
+                <div className="p-3 bg-green-50 rounded-md">
+                  <p className="text-sm text-green-800 mb-2">
+                    ✅ You have {dataSources.length} data source(s) connected. You can now ask questions about your data!
+                  </p>
+                </div>
+                
+                {/* Feature Examples */}
+                <div className="p-3 bg-gray-50 rounded-md">
+                  <p className="text-sm font-medium text-gray-800 mb-2">Try these examples:</p>
+                  <div className="space-y-2 text-xs text-gray-600">
+                    <div className="flex items-center space-x-2">
+                      <Calculator className="w-3 h-3 text-green-600" />
+                      <span>"What's the total cost?" or "Calculate the average balance"</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Table className="w-3 h-3 text-blue-600" />
+                      <span>"Show me transactions above $1000" or "Sort by date"</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <BarChart3 className="w-3 h-3 text-orange-600" />
+                      <span>"Create a bar chart of expenses by category"</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="w-3 h-3 text-purple-600" />
+                      <span>"Analyze spending patterns" or "Find trends in the data"</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      
+      {/* CSV Preview Modal */}
+      {showCSVPreview && selectedFileForPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <CSVPreview 
+              fileId={selectedFileForPreview} 
+              onClose={handleCloseCSVPreview}
+            />
           </div>
         </div>
       )}

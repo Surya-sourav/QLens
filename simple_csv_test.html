@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple CSV Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin: 10px 5px; font-size: 16px; }
+        .button:hover { background: #0056b3; }
+        .button.success { background: #28a745; }
+        .button.error { background: #dc3545; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .result.success { border-left-color: #28a745; background: #d4edda; }
+        .result.error { border-left-color: #dc3545; background: #f8d7da; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .data-table th { background-color: #f2f2f2; font-weight: bold; }
+        .loading { color: #007bff; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 CSV Preview Test</h1>
+        <p>This page tests the CSV preview functionality step by step.</p>
+        
+        <div>
+            <button class="button" onclick="testStep1()">1. Test Backend</button>
+            <button class="button" onclick="testStep2()">2. Get Files</button>
+            <button class="button" onclick="testStep3()">3. Test CSV Preview</button>
+            <button class="button" onclick="testStep4()">4. Show Data</button>
+            <button class="button success" onclick="runAllTests()">🚀 Run All Tests</button>
+        </div>
+        
+        <div id="results"></div>
+        <div id="data-display"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let currentFileId = null;
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+        
+        async function testStep1() {
+            try {
+                log('Testing backend connection...', 'loading');
+                const response = await fetch('http://localhost:8000/health');
+                const data = await response.json();
+                log(`✅ Backend is running: ${JSON.stringify(data)}`, 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Backend error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testStep2() {
+            try {
+                log('Getting file list...', 'loading');
+                const response = await fetch(`${API_BASE}/upload/files`);
+                const files = await response.json();
+                
+                if (files.length === 0) {
+                    log('❌ No files found. Please upload a file first.', 'error');
+                    return false;
+                }
+                
+                currentFileId = files[0].id;
+                log(`✅ Found ${files.length} files. Using file: ${currentFileId}`, 'success');
+                return true;
+            } catch (error) {
+                log(`❌ File list error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testStep3() {
+            if (!currentFileId) {
+                log('❌ No file ID available. Run step 2 first.', 'error');
+                return false;
+            }
+            
+            try {
+                log(`Testing CSV preview for file: ${currentFileId}`, 'loading');
+                const response = await fetch(`${API_BASE}/csv-preview/preview`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        file_id: currentFileId,
+                        page: 1,
+                        page_size: 10
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`✅ CSV preview success! Rows: ${data.total_rows}, Columns: ${data.columns.length}`, 'success');
+                return data;
+            } catch (error) {
+                log(`❌ CSV preview error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testStep4() {
+            const data = await testStep3();
+            if (!data) return;
+            
+            try {
+                const display = document.getElementById('data-display');
+                display.innerHTML = '<h3>📊 CSV Data Preview</h3>';
+                
+                if (data.data && data.data.length > 0) {
+                    const table = document.createElement('table');
+                    table.className = 'data-table';
+                    
+                    // Create header
+                    const thead = document.createElement('thead');
+                    const headerRow = document.createElement('tr');
+                    data.columns.forEach(col => {
+                        const th = document.createElement('th');
+                        th.textContent = col;
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+                    
+                    // Create body
+                    const tbody = document.createElement('tbody');
+                    data.data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        data.columns.forEach(col => {
+                            const td = document.createElement('td');
+                            td.textContent = row[col] || '';
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+                    
+                    display.appendChild(table);
+                    log(`✅ Displayed ${data.data.length} rows of data`, 'success');
+                } else {
+                    display.innerHTML += '<p>No data to display</p>';
+                }
+            } catch (error) {
+                log(`❌ Display error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runAllTests() {
+            log('🚀 Starting all tests...', 'loading');
+            
+            const step1 = await testStep1();
+            if (!step1) return;
+            
+            const step2 = await testStep2();
+            if (!step2) return;
+            
+            const step3 = await testStep3();
+            if (!step3) return;
+            
+            await testStep4();
+            
+            log('🎉 All tests completed successfully!', 'success');
+        }
+        
+        // Auto-run on page load
+        window.onload = function() {
+            log('📋 CSV Preview Test Page Loaded');
+            log('Click "Run All Tests" to test everything automatically');
+        };
+    </script>
+</body>
+</html> 

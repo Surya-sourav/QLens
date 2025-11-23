@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final CSV Preview Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin: 10px 5px; font-size: 16px; }
+        .button:hover { background: #0056b3; }
+        .button.success { background: #28a745; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .result.success { border-left-color: #28a745; background: #d4edda; }
+        .result.error { border-left-color: #dc3545; background: #f8d7da; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .data-table th { background-color: #f2f2f2; font-weight: bold; }
+        .highlight { background-color: #fff3cd; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Final CSV Preview Test</h1>
+        <p>This page tests the CSV preview with the updated file that includes the "average" column.</p>
+        
+        <div>
+            <button class="button" onclick="testFileInfo()">1. Test File Info</button>
+            <button class="button" onclick="testCSVPreview()">2. Test CSV Preview</button>
+            <button class="button success" onclick="runFullTest()">🚀 Full Test</button>
+        </div>
+        
+        <div id="results"></div>
+        <div id="data-display"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const FILE_ID = 'ba65a0e5-d939-4874-8cee-97683e9d0c3c';
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+        
+        async function testFileInfo() {
+            try {
+                log('Testing file info...', 'loading');
+                const response = await fetch(`${API_BASE}/csv-preview/file/${FILE_ID}/info`);
+                const data = await response.json();
+                
+                log(`✅ File info loaded!`, 'success');
+                log(`📊 Total rows: ${data.data_info.total_rows}`, 'success');
+                log(`📋 Total columns: ${data.data_info.total_columns}`, 'success');
+                log(`📋 Columns: ${data.data_info.columns.join(', ')}`, 'success');
+                
+                // Check if average column exists
+                const hasAverage = data.data_info.columns.includes('average');
+                if (hasAverage) {
+                    log(`🎉 SUCCESS: "average" column found!`, 'success');
+                } else {
+                    log(`❌ FAILED: "average" column NOT found!`, 'error');
+                }
+                
+                return data;
+            } catch (error) {
+                log(`❌ File info error: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        async function testCSVPreview() {
+            try {
+                log('Testing CSV preview...', 'loading');
+                const response = await fetch(`${API_BASE}/csv-preview/preview`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        file_id: FILE_ID,
+                        page: 1,
+                        page_size: 5
+                    })
+                });
+                
+                const data = await response.json();
+                log(`✅ CSV preview loaded!`, 'success');
+                log(`📊 Total rows: ${data.total_rows}`, 'success');
+                log(`📋 Total columns: ${data.columns.length}`, 'success');
+                log(`📋 Columns: ${data.columns.join(', ')}`, 'success');
+                
+                // Check if average column exists
+                const hasAverage = data.columns.includes('average');
+                if (hasAverage) {
+                    log(`🎉 SUCCESS: "average" column found in CSV preview!`, 'success');
+                } else {
+                    log(`❌ FAILED: "average" column NOT found in CSV preview!`, 'error');
+                }
+                
+                // Display data
+                displayData(data);
+                
+                return data;
+            } catch (error) {
+                log(`❌ CSV preview error: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        function displayData(data) {
+            const display = document.getElementById('data-display');
+            display.innerHTML = '<h3>📊 CSV Data Preview</h3>';
+            
+            if (data.data && data.data.length > 0) {
+                const table = document.createElement('table');
+                table.className = 'data-table';
+                
+                // Create header
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                data.columns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.textContent = col;
+                    if (col === 'average') {
+                        th.className = 'highlight';
+                    }
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+                
+                // Create body
+                const tbody = document.createElement('tbody');
+                data.data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    data.columns.forEach(col => {
+                        const td = document.createElement('td');
+                        td.textContent = row[col] || '';
+                        if (col === 'average') {
+                            td.className = 'highlight';
+                        }
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+                
+                display.appendChild(table);
+                log(`✅ Displayed ${data.data.length} rows of data`, 'success');
+            } else {
+                display.innerHTML += '<p>No data to display</p>';
+            }
+        }
+        
+        async function runFullTest() {
+            log('🚀 Starting full CSV preview test...', 'loading');
+            
+            const fileInfo = await testFileInfo();
+            if (!fileInfo) return;
+            
+            const csvPreview = await testCSVPreview();
+            if (!csvPreview) return;
+            
+            // Final check
+            const hasAverageInInfo = fileInfo.data_info.columns.includes('average');
+            const hasAverageInPreview = csvPreview.columns.includes('average');
+            
+            if (hasAverageInInfo && hasAverageInPreview) {
+                log('🎉 FULL SUCCESS: "average" column found in both file info and CSV preview!', 'success');
+            } else {
+                log('❌ FAILED: "average" column missing in one or both endpoints!', 'error');
+            }
+        }
+        
+        // Auto-run on page load
+        window.onload = function() {
+            log('📋 Final CSV Preview Test Page Loaded');
+            log('Click "Full Test" to test everything automatically');
+        };
+    </script>
+</body>
+</html> 

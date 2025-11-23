@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Preview Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 10px; }
+        .button:hover { background: #0056b3; }
+        .result { margin: 20px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>CSV Preview Test</h1>
+    
+    <div>
+        <button class="button" onclick="testBackendHealth()">Test Backend Health</button>
+        <button class="button" onclick="testFileList()">Test File List</button>
+        <button class="button" onclick="testCSVPreview()">Test CSV Preview</button>
+        <button class="button" onclick="testFrontend()">Test Frontend</button>
+        <button class="button" onclick="testAllEndpoints()">Test All Endpoints</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+        
+        async function testBackendHealth() {
+            try {
+                log('Testing backend health...');
+                const response = await fetch('http://localhost:8000/health');
+                const data = await response.json();
+                log(`Backend health: ${JSON.stringify(data)}`, 'success');
+            } catch (error) {
+                log(`Backend health error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFileList() {
+            try {
+                log('Testing file list...');
+                const response = await fetch(`${API_BASE}/upload/files`);
+                const files = await response.json();
+                log(`Found ${files.length} files`, 'success');
+                if (files.length > 0) {
+                    log(`First file ID: ${files[0].id}`, 'success');
+                    window.testFileId = files[0].id;
+                }
+            } catch (error) {
+                log(`File list error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCSVPreview() {
+            try {
+                if (!window.testFileId) {
+                    log('No file ID available. Run file list test first.', 'error');
+                    return;
+                }
+                
+                log(`Testing CSV preview for file: ${window.testFileId}`);
+                const response = await fetch(`${API_BASE}/csv-preview/preview`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        file_id: window.testFileId,
+                        page: 1,
+                        page_size: 5
+                    })
+                });
+                const data = await response.json();
+                log(`CSV preview success: ${data.success}, rows: ${data.total_rows}, columns: ${data.columns.length}`, 'success');
+            } catch (error) {
+                log(`CSV preview error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFrontend() {
+            try {
+                log('Testing frontend...');
+                const response = await fetch('http://localhost:3002');
+                if (response.ok) {
+                    log('Frontend is accessible on port 3002', 'success');
+                } else {
+                    log(`Frontend error: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`Frontend error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAllEndpoints() {
+            try {
+                log('Testing all CSV preview endpoints...');
+                
+                // Test file info endpoint
+                const fileInfoResponse = await fetch(`${API_BASE}/csv-preview/file/${window.testFileId}/info`);
+                const fileInfo = await fileInfoResponse.json();
+                log(`File info: ${fileInfo.file_info.filename}`, 'success');
+                
+                // Test file columns endpoint
+                const columnsResponse = await fetch(`${API_BASE}/csv-preview/file/${window.testFileId}/columns`);
+                const columns = await columnsResponse.json();
+                log(`File columns: ${columns.columns.length} columns found`, 'success');
+                
+            } catch (error) {
+                log(`Endpoint test error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run tests
+        window.onload = function() {
+            log('Starting CSV preview tests...');
+            setTimeout(testBackendHealth, 1000);
+            setTimeout(testFileList, 2000);
+            setTimeout(testCSVPreview, 3000);
+            setTimeout(testFrontend, 4000);
+            setTimeout(testAllEndpoints, 5000);
+        };
+    </script>
+</body>
+</html> 
