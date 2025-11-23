@@ -33,7 +33,7 @@ class LLMService:
 
             # Generate response from LLM (synchronous call)
             response = self.client.chat.completions.create(
-                model="llama-4-maverick-17b-128e-instruct",
+                model="llama3.1-8b",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_query}

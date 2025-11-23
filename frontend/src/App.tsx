@@ -30,30 +30,48 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-primary">
         <Toaster
           position="top-right"
           toastOptions={{
             duration: 4000,
             style: {
-              background: '#363636',
+              background: 'rgba(17, 24, 39, 0.95)',
               color: '#fff',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '0.75rem',
+              padding: '1rem 1.25rem',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2)',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
             },
           }}
         />
         
         <Header />
         
-        <div className="flex">
+        <div className="flex h-[calc(100vh-4rem)]">
           <Sidebar />
           
-          <main className="flex-1 p-6">
-            <Routes>
-              {/* Pass latestFileId to ChatInterface and setLatestFileId to FileUpload */}
-              <Route path="/" element={<ChatInterface latestFileId={latestFileId} />} />
-              <Route path="/upload" element={<FileUpload setLatestFileId={handleFileIdUpdate} />} />
-              <Route path="/database" element={<DatabaseConnection />} />
-            </Routes>
+          <main className="flex-1 p-6 overflow-hidden">
+            <div className="h-full">
+              <Routes>
+                {/* Pass latestFileId to ChatInterface and setLatestFileId to FileUpload */}
+                <Route path="/" element={<ChatInterface latestFileId={latestFileId} />} />
+                <Route path="/upload" element={<FileUpload setLatestFileId={handleFileIdUpdate} />} />
+                <Route path="/database" element={<DatabaseConnection />} />
+              </Routes>
+            </div>
           </main>
         </div>
       </div>

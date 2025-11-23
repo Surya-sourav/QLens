@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import CSVPreview from '../Upload/CSVPreview';
 
 const Sidebar: React.FC = () => {
-  const { dataSources, addDataSource, removeDataSource, createNewSession } = useChat();
+  const { dataSources, addDataSource, removeDataSource, createNewSession, loadSession } = useChat();
   const { files } = useFileUpload();
   const [databaseConnections, setDatabaseConnections] = useState<DataSource[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
@@ -222,7 +222,11 @@ const Sidebar: React.FC = () => {
               {sessions.slice(0, 5).map((session) => (
                 <div
                   key={session.sessionId}
-                  className="flex items-center justify-between p-2 rounded-md border border-gray-200 hover:border-gray-300"
+                  className="flex items-center justify-between p-2 rounded-md border border-gray-200 hover:border-blue-400 hover:bg-blue-50 cursor-pointer transition-colors"
+                  onClick={() => {
+                    console.log('Loading session:', session.sessionId);
+                    loadSession(session.sessionId);
+                  }}
                 >
                   <div className="flex items-center space-x-2 flex-1 min-w-0">
                     <MessageSquare className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -245,7 +249,7 @@ const Sidebar: React.FC = () => {
       {/* CSV Preview Modal */}
       {showCSVPreview && selectedFileForPreview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             <CSVPreview 
               fileId={selectedFileForPreview} 
               onClose={() => {

@@ -365,16 +365,16 @@ const CSVPreview: React.FC<CSVPreviewProps> = ({ fileId, onClose }) => {
 
             {/* Data Table */}
             {previewData && (
-              <div className="overflow-x-auto border border-gray-200 rounded-lg">
+              <div className="overflow-x-auto overflow-y-auto max-h-96 border border-gray-200 rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
                       {/* Column letters row - like in screenshot */}
-                      <th className="px-2 py-1 text-xs text-gray-400 border-r border-gray-200"></th>
+                      <th className="px-2 py-1 text-xs text-gray-400 border-r border-gray-200 bg-gray-50"></th>
                       {previewData.columns.map((column, index) => (
                         <th
                           key={index}
-                          className="px-2 py-1 text-xs text-gray-400 border-r border-gray-200"
+                          className="px-2 py-1 text-xs text-gray-400 border-r border-gray-200 bg-gray-50"
                         >
                           {String.fromCharCode(69 + index)} {/* Start from E like in screenshot */}
                         </th>
@@ -482,7 +482,7 @@ const CSVPreview: React.FC<CSVPreviewProps> = ({ fileId, onClose }) => {
         )}
 
         {activeTab === 'columns' && fileColumns && (
-          <div>
+          <div className="max-h-96 overflow-y-auto">
             <h4 className="text-lg font-medium text-gray-900 mb-4">Column Information</h4>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">

@@ -49,7 +49,7 @@ class AgenticService:
             
             # Use synchronous call since Cerebras client is not async
             response = self.llm_service.client.chat.completions.create(
-                model="llama-4-maverick-17b-128e-instruct",
+                model="llama3.1-8b",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"Query: {user_query}"}
@@ -253,7 +253,7 @@ class AgenticService:
             Provide a helpful, informative response that addresses the user's question. If they're asking for analysis, provide detailed insights with specific data points."""
             
             response = await self.llm_service.client.chat.completions.create(
-                model="llama-4-maverick-17b-128e-instruct",
+                model="llama3.1-8b",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"User question: {user_query}"}
@@ -434,7 +434,7 @@ Generate only the calculation code, no explanations.
             # Use the LLM service directly with our custom system prompt
             if hasattr(llm_service, 'client') and llm_service.client:
                 response = llm_service.client.chat.completions.create(
-                    model="llama-4-maverick-17b-128e-instruct",
+                    model="llama3.1-8b",
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_query}

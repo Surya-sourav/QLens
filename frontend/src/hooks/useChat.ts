@@ -108,6 +108,45 @@ export const useChat = () => {
     console.log('Created new session:', newSessionId);
   }, []);
 
+  const loadSession = useCallback(async (sessionIdToLoad: string) => {
+    try {
+      console.log('Loading session:', sessionIdToLoad);
+      setLoading(true);
+      
+      // Fetch session messages from backend
+      const sessionMessages = await apiService.getSessionMessages(sessionIdToLoad);
+      console.log('Loaded session messages:', sessionMessages);
+      
+      // Convert API responses to ChatMessage format
+      // Backend already saves both user and assistant messages separately
+      const loadedMessages: ChatMessage[] = sessionMessages.map((response) => {
+        return {
+          id: response.messageId,
+          content: response.content,
+          messageType: response.messageType as 'user' | 'assistant',
+          timestamp: response.timestamp,
+          responseType: response.responseType,
+          chartData: response.chartData,
+          chartType: response.chartType,
+          chartCode: response.chartCode,
+          calculationResult: response.calculationResult,
+          dataPreview: response.dataPreview,
+          manipulationResult: response.manipulationResult,
+          metadata: response.metadata,
+        };
+      });
+      
+      setMessages(loadedMessages);
+      setSessionId(sessionIdToLoad);
+      toast.success('Session loaded successfully');
+    } catch (error) {
+      console.error('Error loading session:', error);
+      toast.error('Failed to load session');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const sendMessage = useCallback(async (message: string) => {
     if (!message.trim()) return;
 
@@ -243,6 +282,7 @@ export const useChat = () => {
     removeDataSource,
     sendMessage,
     createNewSession,
+    loadSession,
     isConnected,
     sessionId,
   };

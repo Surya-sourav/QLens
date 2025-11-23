@@ -179,8 +179,64 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
         <MessageList messages={messages} loading={loading} />
       </div>
 
+      {/* Empty State - Shows before first message */}
+      {messages.length === 0 && !loading && (
+        <div className="border-t border-gray-200 p-6 bg-gray-50">
+          <div className="text-center max-w-2xl mx-auto">
+            <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Send className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Start a conversation
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Ask questions about your data, request visualizations, perform calculations, or get insights from your uploaded files and database connections.
+            </p>
+            {dataSources.length === 0 && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  💡 <strong>Tip:</strong> Upload files or connect to a database to get started with data analysis.
+                </p>
+              </div>
+            )}
+            {dataSources.length > 0 && (
+              <div className="space-y-3">
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800 font-medium">
+                    ✅ You have {dataSources.length} data source(s) connected. You can now ask questions about your data!
+                  </p>
+                </div>
+                
+                {/* Feature Examples */}
+                <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                  <p className="text-sm font-semibold text-gray-900 mb-3">Try these examples:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-700">
+                    <div className="flex items-start space-x-2 p-2 bg-gray-50 rounded">
+                      <Calculator className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>"What's the total cost?" or "Calculate the average balance"</span>
+                    </div>
+                    <div className="flex items-start space-x-2 p-2 bg-gray-50 rounded">
+                      <Table className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span>"Show me transactions above $1000" or "Sort by date"</span>
+                    </div>
+                    <div className="flex items-start space-x-2 p-2 bg-gray-50 rounded">
+                      <BarChart3 className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                      <span>"Create a bar chart of expenses by category"</span>
+                    </div>
+                    <div className="flex items-start space-x-2 p-2 bg-gray-50 rounded">
+                      <TrendingUp className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                      <span>"Analyze spending patterns" or "Find trends in the data"</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Input */}
-      <div className="border-t border-gray-200 p-4">
+      <div className="border-t border-gray-200 p-4 bg-white">
         <MessageInput onSendMessage={handleSendMessage} disabled={loading} />
       </div>
 
@@ -195,67 +251,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
           </div>
         </div>
       )}
-
-      {/* Empty State */}
-      {messages.length === 0 && !loading && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Send className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Start a conversation
-            </h3>
-            <p className="text-gray-500 max-w-md">
-              Ask questions about your data, request visualizations, perform calculations, or get insights from your uploaded files and database connections.
-            </p>
-            {dataSources.length === 0 && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-md">
-                <p className="text-sm text-blue-800">
-                  💡 Tip: Upload files or connect to a database to get started with data analysis.
-                </p>
-              </div>
-            )}
-            {dataSources.length > 0 && (
-              <div className="mt-4 space-y-3">
-                <div className="p-3 bg-green-50 rounded-md">
-                  <p className="text-sm text-green-800 mb-2">
-                    ✅ You have {dataSources.length} data source(s) connected. You can now ask questions about your data!
-                  </p>
-                </div>
-                
-                {/* Feature Examples */}
-                <div className="p-3 bg-gray-50 rounded-md">
-                  <p className="text-sm font-medium text-gray-800 mb-2">Try these examples:</p>
-                  <div className="space-y-2 text-xs text-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <Calculator className="w-3 h-3 text-green-600" />
-                      <span>"What's the total cost?" or "Calculate the average balance"</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Table className="w-3 h-3 text-blue-600" />
-                      <span>"Show me transactions above $1000" or "Sort by date"</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <BarChart3 className="w-3 h-3 text-orange-600" />
-                      <span>"Create a bar chart of expenses by category"</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <TrendingUp className="w-3 h-3 text-purple-600" />
-                      <span>"Analyze spending patterns" or "Find trends in the data"</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
       
       {/* CSV Preview Modal */}
       {showCSVPreview && selectedFileForPreview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             <CSVPreview 
               fileId={selectedFileForPreview} 
               onClose={handleCloseCSVPreview}
