@@ -22,6 +22,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
     isConnected
   } = useChat();
   
+  // Debug: Log messages state changes
+  React.useEffect(() => {
+    console.log('ChatInterface: messages state changed:', messages);
+    console.log('ChatInterface: messages.length:', messages.length);
+  }, [messages]);
+  
   const [showCSVPreview, setShowCSVPreview] = React.useState(false);
   const [selectedFileForPreview, setSelectedFileForPreview] = React.useState<string | null>(null);
 
@@ -255,7 +261,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ latestFileId }) => {
       {/* CSV Preview Modal */}
       {showCSVPreview && selectedFileForPreview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-6xl w-full h-[90vh] flex">
             <CSVPreview 
               fileId={selectedFileForPreview} 
               onClose={handleCloseCSVPreview}

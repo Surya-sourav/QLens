@@ -172,11 +172,11 @@ async def list_sessions(db: Session = Depends(get_db)):
         return [
             {
                 "id": session.id,
-                "session_id": session.session_id,
-                "data_sources": session.data_sources,
-                "created_at": session.created_at,
-                "last_activity": session.last_activity,
-                "is_active": session.is_active
+                "sessionId": session.session_id,  # Changed to camelCase
+                "dataSources": session.data_sources,  # Changed to camelCase
+                "createdAt": session.created_at,  # Changed to camelCase
+                "lastActivity": session.last_activity,  # Changed to camelCase
+                "isActive": session.is_active  # Changed to camelCase
             }
             for session in sessions
         ]
@@ -192,16 +192,16 @@ async def get_session_messages(session_id: str, db: Session = Depends(get_db)):
         messages = db.query(ChatMessageModel).filter(ChatMessageModel.session_id == session_id).order_by(ChatMessageModel.timestamp).all()
         return [
             {
-                "message_id": msg.id,
+                "messageId": msg.id,  # Changed to camelCase
                 "content": msg.content,
-                "message_type": msg.message_type,
+                "messageType": msg.message_type,  # Changed to camelCase
                 "timestamp": msg.timestamp,
-                "response_type": ResponseType.CHART if msg.chart_data else ResponseType.TEXT,
+                "responseType": ResponseType.CHART if msg.chart_data else ResponseType.TEXT,  # Changed to camelCase
                 "chartData": msg.chart_data,
                 "chartType": msg.chart_type,
                 "chartCode": msg.chart_code,
-                "calculation_result": None,
-                "data_preview": None,
+                "calculationResult": None,  # Changed to camelCase
+                "dataPreview": None,  # Changed to camelCase
                 "metadata": msg.message_metadata
             }
             for msg in messages

@@ -116,10 +116,12 @@ export const useChat = () => {
       // Fetch session messages from backend
       const sessionMessages = await apiService.getSessionMessages(sessionIdToLoad);
       console.log('Loaded session messages:', sessionMessages);
+      console.log('Number of messages:', sessionMessages.length);
       
       // Convert API responses to ChatMessage format
       // Backend already saves both user and assistant messages separately
       const loadedMessages: ChatMessage[] = sessionMessages.map((response) => {
+        console.log('Processing message:', response);
         return {
           id: response.messageId,
           content: response.content,
@@ -136,8 +138,11 @@ export const useChat = () => {
         };
       });
       
+      console.log('Loaded messages array:', loadedMessages);
+      console.log('Setting messages to state...');
       setMessages(loadedMessages);
       setSessionId(sessionIdToLoad);
+      console.log('Messages set successfully');
       toast.success('Session loaded successfully');
     } catch (error) {
       console.error('Error loading session:', error);

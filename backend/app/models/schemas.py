@@ -84,20 +84,23 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    message_id: str
+    messageId: str = Field(alias="message_id")
     content: str
-    message_type: MessageType
+    messageType: MessageType = Field(alias="message_type")
     timestamp: datetime
-    response_type: Optional[ResponseType] = None
+    responseType: Optional[ResponseType] = Field(None, alias="response_type")
     chartData: Optional[Dict[str, Any]] = None
     chartType: Optional[ChartType] = None
     chartCode: Optional[str] = None
-    calculation_result: Optional[Dict[str, Any]] = None
-    data_preview: Optional[Dict[str, Any]] = None
-    manipulation_result: Optional[Dict[str, Any]] = None
+    calculationResult: Optional[Dict[str, Any]] = Field(None, alias="calculation_result")
+    dataPreview: Optional[Dict[str, Any]] = Field(None, alias="data_preview")
+    manipulationResult: Optional[Dict[str, Any]] = Field(None, alias="manipulation_result")
     metadata: Optional[Dict[str, Any]] = None
     query_intent: Optional[QueryIntent] = None
     query_analysis: Optional[Dict[str, Any]] = None
+    
+    class Config:
+        populate_by_name = True
 
 
 class DataManipulationResult(BaseModel):

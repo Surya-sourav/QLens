@@ -255,7 +255,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ setLatestFileId }) => {
       {/* CSV Preview Modal */}
       {selectedFileForPreview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-6xl w-full h-[90vh] flex">
             <CSVPreview 
               fileId={selectedFileForPreview} 
               onClose={handleClosePreview}

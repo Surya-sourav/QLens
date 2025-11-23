@@ -214,9 +214,9 @@ const CSVPreview: React.FC<CSVPreviewProps> = ({ fileId, onClose }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-gray-200">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+    <div className="bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col h-full max-h-[90vh]">
+      {/* Header - Fixed */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <FileText className="h-6 w-6 text-primary-600" />
           <div>
@@ -238,8 +238,8 @@ const CSVPreview: React.FC<CSVPreviewProps> = ({ fileId, onClose }) => {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
+      {/* Tabs - Fixed */}
+      <div className="border-b border-gray-200 flex-shrink-0">
         <nav className="flex space-x-8 px-4">
           <button
             onClick={() => setActiveTab('preview')}
@@ -276,8 +276,8 @@ const CSVPreview: React.FC<CSVPreviewProps> = ({ fileId, onClose }) => {
         </nav>
       </div>
 
-      {/* Content */}
-      <div className="p-4">
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto p-4">
         {activeTab === 'preview' && (
           <div>
             {/* Download Controls - Similar to screenshot */}
@@ -365,7 +365,7 @@ const CSVPreview: React.FC<CSVPreviewProps> = ({ fileId, onClose }) => {
 
             {/* Data Table */}
             {previewData && (
-              <div className="overflow-x-auto overflow-y-auto max-h-96 border border-gray-200 rounded-lg">
+              <div className="overflow-x-auto border border-gray-200 rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
