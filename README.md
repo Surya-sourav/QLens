@@ -1,10 +1,18 @@
+<img width="1919" height="966" alt="5" src="https://github.com/user-attachments/assets/b8baf655-2015-4534-80e2-77d3913a529c" />
+
 # QLens - Agentic-AI For Complex Data Analysis
 
 QLens is an intelligent data analysis platform that allows you to have natural conversations with your data. Upload CSV or Excel files and ask questions in plain English to get insights, visualizations, calculations, and data manipulation results.
 
 ## 🚀 New Features (Latest Update)
 
-# Visuals :
+# Visuals :<img width="1919" height="966" alt="4" src="https://github.com/user-attachments/assets/d867e2f9-afca-47ea-aa91-41a12db240c8" />
+
+<img width="1919" height="966" alt="3" src="https://github.com/user-attachments/assets/5a8f0015-4187-40d8-af17-381b067eaa70" />
+<img width="1919" height="966" alt="2" src="https://github.com/user-attachments/assets/45e6a095-d900-48d7-a207-5028630af6fb" />
+<img width="1919" height="966" alt="1" src="https://github.com/user-attachments/assets/674d6541-0059-4698-8470-6892bcc522f4" />
+
+
 
 
 
